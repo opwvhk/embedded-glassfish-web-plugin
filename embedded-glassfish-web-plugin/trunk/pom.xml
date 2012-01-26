@@ -2,9 +2,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.sonatype.oss</groupId>
-		<artifactId>oss-parent</artifactId>
-		<version>7</version>
+		<groupId>net.sf.opk</groupId>
+		<artifactId>opk-parent</artifactId>
+		<version>1</version>
 	</parent>
 	<groupId>net.sf.opk</groupId>
 	<artifactId>embedded-glassfish-web-plugin</artifactId>
@@ -40,38 +40,19 @@
 			<comments>A business-friendly OSS license</comments>
 		</license>
 	</licenses>
-	<url>${project.distributionManagement.downloadUrl}</url>
+	<url>http://opk.sf.net/embedded-glassfish-web-plugin/</url>
 	<inceptionYear>2011</inceptionYear>
 	<distributionManagement>
-		<downloadUrl>http://opk.sf.net/${project.artifactId}</downloadUrl>
-		<repository>
-			<uniqueVersion>false</uniqueVersion>
-			<id>maven.westravanholthe.nl</id>
-			<name>Maven Repository by OPWvH-K</name>
-			<url>file:///opt/www/hosts/maven/</url>
-		</repository>
-		<!--
-		<snapshotRepository>
-			<uniqueVersion>true</uniqueVersion>
-			<id>corpS</id>
-			<name>Corporate Snapshot Repository</name>
-			<url>sftp://upload/url/usually/scp-or-sftp</url>
-		</snapshotRepository>
-		-->
 		<site>
 			<id>opk.sf.net</id>
 			<name>Project website at SourceForge</name>
-			<url>scp://shell.sourceforge.net/home/project-web/opk/htdocs/</url>
+			<url>scp://shell.sourceforge.net/home/project-web/opk/htdocs/embedded-glassfish-web-plugin/</url>
 		</site>
 	</distributionManagement>
-	<issueManagement>
-		<system>SourceForge Tracker</system>
-		<url>https://sourceforge.net/p/opk/tickets/</url>
-	</issueManagement>
 	<scm>
-		<connection>scm:git:git://git.code.sf.net/p/opk/code/</connection>
-		<developerConnection>scm:git:ssh://git.code.sf.net/p/opk/code/</developerConnection>
-		<url>http://sourceforge.net/p/opk/code/</url>
+		<connection>scm:svn:svn://svn.code.sf.net/p/opk/code/embedded-glassfish-web-plugin/trunk/</connection>
+		<developerConnection>scm:svn:https://svn.code.sf.net/p/opk/code/embedded-glassfish-web-plugin/trunk/</developerConnection>
+		<url>http://svn.code.sf.net/p/opk/code/embedded-glassfish-web-plugin/trunk/</url>
 	</scm>
 	<properties>
 		<maven.compiler.source>1.6</maven.compiler.source>
