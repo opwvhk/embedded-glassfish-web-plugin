@@ -1,0 +1,181 @@
+	---
+	Usage
+	---
+	Oscar Westra van Holthe - Kind
+	---
+	2012-01-09
+	---
+
+Embedded GlassFish Web Plugin: Usage
+
+* Running your web application
+
+  The <<<run>>> and <<<start>>> goals for the Embedded GlassFish Web Plugin are configured to execute the
+  <<<test-compile>>> phase. This ensures that for whatever configuration you use, with or without the test classpath,
+  you can build and run your application by using this simple command:
+
++---
+mvn glassfish:run
++---
+
+
+* Basic configuration
+
+  Since the Embedded GlassFish Web Plugin is available in Maven Central, configuring it is as simple as this:
+  
++---
+<project>
+  ...
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <!-- Here you can (for example) define JNDI resources for your application. -->
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  ...
+</project>
++---
+
+
+* Integration testing
+
+  The <<<start>>> and <<<stop>>> goals are not executed when the plugin is defined, but they are tied to the build
+  phases for the integration test. So to run the application in an embedded GlassFish during integration tests, you can
+  configure the plugin like this:
+
++---
+<project>
+  ...
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <id>start-integration-tests</id>
+            <goals>
+              <goal>start</goal>
+            </goals>
+            <configuration>
+              <!-- Here you can use a different configuration if needed. -->
+            </configuration>
+          </execution>
+          <execution>
+            <id>stop-integration-tests</id>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  ...
+</project>
++---
+
+
+* Using an external DataSource
+
+  It is common in enterprise environments that developers are not allowed access to production passwords. In such
+  cases, any DataSouce that the application uses must be defined outside the application. The Embedded GlassFish Web
+  Plugin supports this use case. The following example defines a DataSource to an in-memory HsqlDB:
+
++---
+<project>
+  ...
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <glassFishResources>${project.basedir}/src/main/config/resources.xml</glassFishResources>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>2.2.6</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
+  ...
+</project>
++---
+
+  Actually, the <<<pom.xml>>> fragment above just defines where the DataSource and any other resources are defined. The
+  actual definition is in the file <<<resources.xml>>>:
+
++---
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN"
+        "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
+<resources>
+    <jdbc-connection-pool name="MyConnectionPool"
+            datasource-classname="org.hsqldb.jdbc.JDBCDataSource" non-transactional-connections="true"
+            steady-pool-size="3" max-pool-size="10" idle-timeout-in-seconds="300"
+            connection-leak-reclaim="true" connection-leak-timeout-in-seconds="60"
+            statement-leak-reclaim="true" statement-leak-timeout-in-seconds="60"
+            connection-validation-method="meta-data" is-connection-validation-required="true">
+        <property name="Url" value="jdbc:hsqldb:mem:TestDB"/>
+        <property name="User" value="sa"/>
+        <property name="Password" value=""/>
+    </jdbc-connection-pool>
+    <jdbc-resource pool-name="MyConnectionPool" jndi-name="jdbc/myDataSource"/>
+</resources>
++---
+
+
+* Using the full JavaEE API
+
+  If the JavaEE Web Profile is not sufficient, i.e. you need the full JavaEE API, you can also do this. The following
+  <<<pom.xml>>> fragment substitutes the embedded GlassFish instance with the one providing the full JavaEE API:
+
++---
+<project>
+  ...
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>${project.artifactId}</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+              <exclusion>
+                <groupId>org.glassfish.extras</groupId>
+                <artifactId>glassfish-embedded-web</artifactId>
+              </exclusion>
+            </exclusions>
+          </dependency>
+          <dependency>
+            <groupId>org.glassfish.extras</groupId>
+            <artifactId>glassfish-embedded-all</artifactId>
+            <version>3.1.1</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
+  ...
+</project>
++---
+
+
+
