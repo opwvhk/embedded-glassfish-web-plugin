@@ -7,7 +7,7 @@
 	</parent>
 	<groupId>net.sf.opk</groupId>
 	<artifactId>embedded-glassfish-web-plugin</artifactId>
-	<version>1.1</version>
+	<version>1.2-SNAPSHOT</version>
 	<packaging>maven-plugin</packaging>
 	<name>Embedded GlassFish Web Plugin</name>
 	<description>
@@ -18,9 +18,9 @@
 	<!--<url>http://opk.sf.net/embedded-glassfish-web-plugin/</url>-->
 	<inceptionYear>2011</inceptionYear>
 	<scm>
-		<connection>scm:svn:svn://svn.code.sf.net/p/opk/code/embedded-glassfish-web-plugin/tags/embedded-glassfish-web-plugin-1.1</connection>
-		<developerConnection>scm:svn:https://svn.code.sf.net/p/opk/code/embedded-glassfish-web-plugin/tags/embedded-glassfish-web-plugin-1.1</developerConnection>
-		<url>http://svn.code.sf.net/p/opk/code/embedded-glassfish-web-plugin/tags/embedded-glassfish-web-plugin-1.1</url>
+		<connection>scm:svn:svn://svn.code.sf.net/p/opk/code/embedded-glassfish-web-plugin/trunk/</connection>
+		<developerConnection>scm:svn:https://svn.code.sf.net/p/opk/code/embedded-glassfish-web-plugin/trunk/</developerConnection>
+		<url>http://svn.code.sf.net/p/opk/code/embedded-glassfish-web-plugin/trunk/</url>
 	</scm>
 	<!--
 	<licenses>
