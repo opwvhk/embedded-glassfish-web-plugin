@@ -99,10 +99,10 @@ public class EmbeddedGlassFish
 		// TODO: Test form login.
 		// TODO: Add configuration option to add users to ConfiguredEmbeddedGlassFishMojo.
 		// TODO: Increase branch coverage to 100% (line coverage is 100%).
-		asadmin("list-auth-realms");
-		asadmin("list-file-users");
-		asadmin("create-file-user", "--passwordfile", "passwds.txt", "--groups", "users:administrators", "oscar");
-		asadmin("list-file-users");
+		//asadmin("list-auth-realms");
+		//asadmin("list-file-users");
+		//asadmin("create-file-user", "--passwordfile", "passwds.txt", "--groups", "users:administrators", "oscar");
+		//asadmin("list-file-users");
 	}
 
 	private void asadmin(String command, String... arguments)
