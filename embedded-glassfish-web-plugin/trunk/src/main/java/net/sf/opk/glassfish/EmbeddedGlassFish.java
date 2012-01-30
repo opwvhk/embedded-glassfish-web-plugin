@@ -94,24 +94,31 @@ public class EmbeddedGlassFish
 		glassfish.start();
 		deployer = glassfish.getDeployer();
 		commandRunner = glassfish.getCommandRunner();
+	}
 
+	public void addFileRealm(FileRealm fileRealm)
+	{
 		// TODO: Add method to add a user here.
 		// TODO: Test form login.
 		// TODO: Add configuration option to add users to ConfiguredEmbeddedGlassFishMojo.
 		// TODO: Increase branch coverage to 100% (line coverage is 100%).
-		//asadmin("list-auth-realms");
+
+		asadmin("list-auth-realms");
 		//asadmin("list-file-users");
 		//asadmin("create-file-user", "--passwordfile", "passwds.txt", "--groups", "users:administrators", "oscar");
 		//asadmin("list-file-users");
 	}
+
 
 	private void asadmin(String command, String... arguments)
 	{
 		System.out.printf("GlassFish asadmin: %s %s\n", command, java.util.Arrays.<String>asList(arguments));
 		CommandResult result = commandRunner.run(command, arguments);
 		System.out.printf("GlassFish [%s] %s\n", result.getExitStatus(), result.getOutput());
+		//noinspection ThrowableResultOfMethodCallIgnored
 		if (result.getFailureCause() != null)
 		{
+			//noinspection ThrowableResultOfMethodCallIgnored
 			result.getFailureCause().printStackTrace();
 		}
 	}
@@ -123,6 +130,7 @@ public class EmbeddedGlassFish
 	 *
 	 * @param resourceFile the resource file
 	 * @return a command result that tells whether adding the resources succeeded
+	 * @throws GlassFishException when the resources cannot be added
 	 */
 	public CommandResult addResources(File resourceFile) throws GlassFishException
 	{

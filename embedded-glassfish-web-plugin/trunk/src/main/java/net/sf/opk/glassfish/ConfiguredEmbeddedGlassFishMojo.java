@@ -33,18 +33,21 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 	 * @required
 	 * @readonly
 	 */
+	@SuppressWarnings({"UnusedDeclaration"})
 	private MavenProject project;
 	/**
 	 * The context root to deploy the application at. Defaults to the artifact.
 	 *
 	 * @parameter expression="${project.build.finalName}" default-value="${project.build.finalName}"
 	 */
+	@SuppressWarnings({"UnusedDeclaration"})
 	private String applicationName;
 	/**
 	 * The context root to deploy the application at. Defaults to the artifact.
 	 *
 	 * @parameter default-value="/${project.artifactId}"
 	 */
+	@SuppressWarnings({"UnusedDeclaration"})
 	private String contextRoot;
 	/**
 	 * If true, the &lt;testClassesDirectory&gt; will be put on the runtime classpath before &lt;classesDirectory&gt;
@@ -52,6 +55,7 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 	 *
 	 * @parameter default-value="false"
 	 */
+	@SuppressWarnings({"UnusedDeclaration"})
 	private boolean useTestClasspath;
 	/**
 	 * The directory where classes are compiled to.
@@ -59,6 +63,7 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 	 * @parameter expression="${project.build.outputDirectory}" default-value="${project.build.outputDirectory}"
 	 * @required
 	 */
+	@SuppressWarnings({"UnusedDeclaration"})
 	private File classesDirectory;
 	/**
 	 * The directory where classes test are compiled to.
@@ -66,6 +71,7 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 	 * @parameter expression="${project.build.testOutputDirectory}" default-value="${project.build.testOutputDirectory}"
 	 * @required
 	 */
+	@SuppressWarnings({"UnusedDeclaration"})
 	private File testClassesDirectory;
 	/**
 	 * The directory that contains the resources of the web application.
@@ -73,6 +79,7 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 	 * @parameter default-value="${project.basedir}/src/main/webapp"
 	 * @required
 	 */
+	@SuppressWarnings({"UnusedDeclaration"})
 	private File webAppSourceDirectory;
 	/**
 	 * A resource file that defines the external resources required by the web application. Similar to
@@ -82,18 +89,48 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 	 *
 	 * @parameter
 	 */
+	@SuppressWarnings({"UnusedDeclaration"})
 	private File glassFishResources;
 	/**
 	 * A file to configure <code>java.util.logging</code>, which is the logging system used by GlassFish.
 	 *
 	 * @parameter
 	 */
+	@SuppressWarnings({"UnusedDeclaration"})
 	private File loggingProperties;
+	/**
+	 * The file realms to create prior to deploying the application. The predefined realms &quot;file&quot; and
+	 * &quot;admin-realm&quot; are recognized and not created anew, though the users you define are added. The
+	 * predefined realm &quot;certificate&quot; is also recognized, but will generate an error (it is not a file realm).
+	 *
+	 * @parameter
+	 */
+	@SuppressWarnings({"UnusedDeclaration", "MismatchedReadAndWriteOfArray"})
+	private FileRealm[] fileRealms;
+	/**
+	 * The HTTP port GlassFish should listen on. Defaults to 8080.
+	 *
+	 * @parameter default-value="8080"
+	 */
+	@SuppressWarnings({"UnusedDeclaration"})
+	private int httpPort;
+	/**
+	 * The HTTPS port GlassFish should listen on. Defaults to 8443.
+	 *
+	 * @parameter default-value="8443"
+	 */
+	@SuppressWarnings({"UnusedDeclaration"})
+	private int httpsPort;
 	/**
 	 * All dependencies, by type, in the iteration order of {@link MavenProject#getArtifacts()}.
 	 */
 	private Map<String, List<Artifact>> dependenciesByType = null;
 
+
+	protected EmbeddedGlassFish createEmbeddedGlassFish() throws GlassFishException
+	{
+		return new EmbeddedGlassFish(httpPort, httpsPort);
+	}
 
 	/**
 	 * Configure logging for GlassFish using the specified {@link #loggingProperties} (if any).
@@ -128,6 +165,16 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 			logCommandResult(instance.addResources(glassFishResources));
 		}
 
+		// Add any file realms
+
+		if (fileRealms != null)
+		{
+			for (FileRealm fileRealm : fileRealms)
+			{
+				instance.addFileRealm(fileRealm);
+			}
+		}
+
 		// We deploy both war and ear dependencies. The latter are not supported by the JavaEE Web Profile, but are
 		// supported by a full JavaEE embedded GlassFish (which can be used by substituting the plugin dependency).
 
@@ -153,6 +200,7 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 				getLog().warn(result.getOutput());
 				break;
 			case FAILURE:
+				//noinspection ThrowableResultOfMethodCallIgnored
 				getLog().error(result.getOutput(), result.getFailureCause());
 				break;
 			default:

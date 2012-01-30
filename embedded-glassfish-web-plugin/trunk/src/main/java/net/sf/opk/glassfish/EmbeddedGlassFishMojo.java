@@ -13,18 +13,6 @@ import org.glassfish.embeddable.GlassFishException;
 public abstract class EmbeddedGlassFishMojo extends AbstractMojo
 {
 	/**
-	 * The HTTP port GlassFish should listen on. Defaults to 8080.
-	 *
-	 * @parameter default-value="8080"
-	 */
-	private int httpPort;
-	/**
-	 * The HTTPS port GlassFish should listen on. Defaults to 8443.
-	 *
-	 * @parameter default-value="8443"
-	 */
-	private int httpsPort;
-	/**
 	 * The ebmedded GlassFish instance.
 	 */
 	private static EmbeddedGlassFish glassfish = null;
@@ -40,10 +28,19 @@ public abstract class EmbeddedGlassFishMojo extends AbstractMojo
 	{
 		if (glassfish == null)
 		{
-			glassfish = new EmbeddedGlassFish(httpPort, httpsPort);
+			glassfish = createEmbeddedGlassFish();
 		}
 		return glassfish;
 	}
+
+
+	/**
+	 * Create the embedded GlassFish instance.
+	 *
+	 * @return an embedded GlassFish instance
+	 * @throws GlassFishException when initialization fails
+	 */
+	protected abstract EmbeddedGlassFish createEmbeddedGlassFish() throws GlassFishException;
 
 
 	protected void startup() throws GlassFishException

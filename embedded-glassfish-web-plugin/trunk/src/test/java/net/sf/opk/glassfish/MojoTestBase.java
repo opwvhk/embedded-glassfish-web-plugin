@@ -17,11 +17,6 @@ import org.apache.maven.project.MavenProject;
 import org.glassfish.embeddable.CommandResult;
 
 
-/**
- * ...
- *
- * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
- */
 public class MojoTestBase
 {
 	private static final String APP_NAME = "testApp";
@@ -68,11 +63,11 @@ public class MojoTestBase
 	{
 		try
 		{
-			URL location = RunMojoTest.class.getResource(name);
+			URL location = MojoTestBase.class.getResource(name);
 			if (location == null)
 			{
-				throw new IllegalArgumentException(String.format("The resource \"%s\" cannot be found on the classpath",
-				                                                 name));
+				throw new IllegalArgumentException(String.format(
+						"The resource \"%s\" cannot be found on the " + "classpath", name));
 			}
 			return new File(location.toURI());
 		}
@@ -86,7 +81,7 @@ public class MojoTestBase
 
 	protected EmbeddedGlassFishMojo createAndConfigureMojo(EmbeddedGlassFish embeddedGlassFish) throws Exception
 	{
-		EmbeddedGlassFishMojo mojo = new EmbeddedGlassFishMojo()
+		EmbeddedGlassFishMojo mojo = new ConfiguredEmbeddedGlassFishMojo()
 		{
 			@Override
 			public void execute() throws MojoExecutionException, MojoFailureException
@@ -94,14 +89,14 @@ public class MojoTestBase
 				// Nothing to do.
 			}
 		};
-		return configureMojo(mojo, HTTP_PORT, HTTPS_PORT, embeddedGlassFish);
+		return configureBaseMojo(mojo, embeddedGlassFish);
 	}
 
 
 	protected ConfiguredEmbeddedGlassFishMojo createAndConfigureMojo(boolean useTestClassPath, File resources,
 	                                                                 File loggingConfiguration,
 	                                                                 EmbeddedGlassFish embeddedGlassFish)
-		throws Exception
+			throws Exception
 	{
 		ConfiguredEmbeddedGlassFishMojo mojo = new ConfiguredEmbeddedGlassFishMojo()
 		{
@@ -111,26 +106,26 @@ public class MojoTestBase
 				// Nothing to do.
 			}
 		};
-		mojo = configureMojo(mojo, HTTP_PORT, HTTPS_PORT, embeddedGlassFish);
+		mojo = configureMojo(mojo, embeddedGlassFish);
 		return configureMojo(mojo, APP_NAME, APP_PATH, CLASSES_DIRECTORY,
 		                     useTestClassPath ? TEST_CLASSES_DIRECTORY : null, WEBAPP_DIRECTORY, resources,
-		                     loggingConfiguration);
+		                     loggingConfiguration, HTTP_PORT, HTTPS_PORT);
 	}
 
 
 	protected <M extends ConfiguredEmbeddedGlassFishMojo> M configureMojo(M mojo, EmbeddedGlassFish embeddedGlassFish)
 			throws Exception
 	{
-		mojo = configureMojo(mojo, HTTP_PORT, HTTPS_PORT, embeddedGlassFish);
-		return configureMojo(mojo, APP_NAME, APP_PATH, CLASSES_DIRECTORY, null, WEBAPP_DIRECTORY, null, null);
+		mojo = configureBaseMojo(mojo, embeddedGlassFish);
+		return configureMojo(mojo, APP_NAME, APP_PATH, CLASSES_DIRECTORY, null, WEBAPP_DIRECTORY, null, null,
+		                     HTTP_PORT,
+		                     HTTPS_PORT);
 	}
 
 
-	protected <M extends EmbeddedGlassFishMojo> M configureMojo(M mojo, int httpPort, int httpsPort,
-	                                                            EmbeddedGlassFish embeddedGlassFish) throws Exception
+	protected <M extends EmbeddedGlassFishMojo> M configureBaseMojo(M mojo, EmbeddedGlassFish embeddedGlassFish)
+			throws Exception
 	{
-		getField(EmbeddedGlassFishMojo.class, "httpPort").setInt(mojo, httpPort);
-		getField(EmbeddedGlassFishMojo.class, "httpsPort").setInt(mojo, httpsPort);
 		getField(EmbeddedGlassFishMojo.class, "glassfish").set(null, embeddedGlassFish);
 
 		return mojo;
@@ -139,9 +134,10 @@ public class MojoTestBase
 
 	private <M extends ConfiguredEmbeddedGlassFishMojo> M configureMojo(M mojo, String name, String path,
 	                                                                    File classesDirectory,
-	                                                                    File testClassesDirectory, File webAppDirectory,
-	                                                                    File resources, File loggingConfiguration)
-		throws Exception
+	                                                                    File testClassesDirectory,
+	                                                                    File webAppDirectory,
+	                                                                    File resources, File loggingConfiguration,
+	                                                                    int httpPort, int httpsPort) throws Exception
 	{
 		MavenProject project = new MavenProjectStub()
 		{
@@ -176,6 +172,8 @@ public class MojoTestBase
 		getField(ConfiguredEmbeddedGlassFishMojo.class, "webAppSourceDirectory").set(mojo, webAppDirectory);
 		getField(ConfiguredEmbeddedGlassFishMojo.class, "glassFishResources").set(mojo, resources);
 		getField(ConfiguredEmbeddedGlassFishMojo.class, "loggingProperties").set(mojo, loggingConfiguration);
+		getField(ConfiguredEmbeddedGlassFishMojo.class, "httpPort").setInt(mojo, httpPort);
+		getField(ConfiguredEmbeddedGlassFishMojo.class, "httpsPort").setInt(mojo, httpsPort);
 
 		return mojo;
 	}
