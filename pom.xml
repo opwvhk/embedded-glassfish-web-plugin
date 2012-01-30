@@ -15,23 +15,12 @@
 		It runs your artifact, from its sources and with it's (externally) defined resources in an embedded Glassfish
 		container.
 	</description>
-	<!--<url>http://opk.sf.net/embedded-glassfish-web-plugin/</url>-->
 	<inceptionYear>2011</inceptionYear>
 	<scm>
 		<connection>scm:svn:svn://svn.code.sf.net/p/opk/code/embedded-glassfish-web-plugin/trunk/</connection>
 		<developerConnection>scm:svn:https://svn.code.sf.net/p/opk/code/embedded-glassfish-web-plugin/trunk/</developerConnection>
 		<url>http://svn.code.sf.net/p/opk/code/embedded-glassfish-web-plugin/trunk/</url>
 	</scm>
-	<!--
-	<licenses>
-		<license>
-			<name>Apache 2</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>repo</distribution>
-			<comments>A business-friendly OSS license</comments>
-		</license>
-	</licenses>
-	-->
 	<properties>
 		<maven.compiler.source>1.6</maven.compiler.source>
 		<maven.compiler.target>1.6</maven.compiler.target>

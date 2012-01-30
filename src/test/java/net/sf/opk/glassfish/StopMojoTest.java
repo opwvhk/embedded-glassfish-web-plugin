@@ -24,7 +24,7 @@ public class StopMojoTest extends MojoTestBase
 		expectLastCall().once();
 		replay(mockGlassFish);
 
-		StopMojo mojo = configureMojo(new StopMojo(), HTTP_PORT, HTTPS_PORT, mockGlassFish);
+		StopMojo mojo = configureBaseMojo(new StopMojo(), mockGlassFish);
 		mojo.execute();
 
 		verify(mockGlassFish);
