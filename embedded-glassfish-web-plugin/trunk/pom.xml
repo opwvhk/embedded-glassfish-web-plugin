@@ -84,6 +84,12 @@
 			<artifactId>glassfish-embedded-web</artifactId>
 			<version>${glassfish.version}</version>
 		</dependency>
+		<!-- Workaround for a bug: the OSGI classes seem to be missing from GlassFish. -->
+		<dependency>
+			<groupId>org.osgi</groupId>
+			<artifactId>org.osgi.core</artifactId>
+			<version>4.2.0</version>
+		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>

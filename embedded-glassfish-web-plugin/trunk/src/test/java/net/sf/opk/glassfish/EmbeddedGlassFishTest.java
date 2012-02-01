@@ -37,9 +37,22 @@ public class EmbeddedGlassFishTest
 			File resources = getResourceAsFile("/resources.xml");
 			File warFile = getResourceAsFile("/minimal_war.war");
 
+			User user1 = new User();
+			user1.setUsername("test1");
+			user1.setPassword("pass1");
+			user1.setRoles(new String[]{"role1", "role2"});
+			User user2 = new User();
+			user2.setUsername("test2");
+			user2.setPassword("pass2");
+			user2.setRoles(new String[]{"role1", "role3"});
+			FileRealm fileRealm = new FileRealm();
+			fileRealm.setRealmName("testRealm");
+			fileRealm.setUsers(new User[]{user1, user2});
+
 			ScatteredArchive artifact = createScatteredArchive();
 			embeddedGlassFish.startup();
 			embeddedGlassFish.addResources(resources);
+			embeddedGlassFish.addFileRealm(fileRealm);
 			embeddedGlassFish.deployApplication(warFile);
 			embeddedGlassFish.deployArtifact(artifact, "/test");
 
