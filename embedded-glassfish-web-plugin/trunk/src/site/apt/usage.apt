@@ -138,6 +138,54 @@ mvn glassfish:run
 +---
 
 
+* Authentication
+
+  To secure your web application, you'll want to configure authentication. You can do that like so:
+  
++---
+<project>
+  ...
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <fileRealms>
+            <fileRealm>
+              <realmName>myAppRealm</realmName>
+              <users>
+                <user>
+                  <username>testUser</username>
+                  <password>secret</password>
+                  <roles>
+                    <role>role1</role>
+                    <role>role2</role>
+                  </roles>
+                </user>
+              </users>
+            </fileRealm>
+          </fileRealms>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  ...
+</project>
++---
+
+  The configuration above defines a realm with one user. The user has two roles (actually groups in GlassFish terms, but by default each group is a JavaEE role). You can use this realm using the snippet
+  below in your <<<web.xml>>>. The only important part is the <<<realm-name>>> tag.
+
++---
+  <login-config>
+    <auth-method>BASIC</auth-method>
+    <realm-name>myAppRealm</realm-name>
+  </login-config>
++---
+
+
 * Using the full JavaEE API
 
   If the JavaEE Web Profile is not sufficient, i.e. you need the full JavaEE API, you can also do this. The following
