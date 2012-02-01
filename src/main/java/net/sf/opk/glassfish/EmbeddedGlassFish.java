@@ -1,12 +1,15 @@
 package net.sf.opk.glassfish;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
+import javax.security.auth.login.Configuration;
 
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.CommandResult;
@@ -27,6 +30,9 @@ import org.glassfish.embeddable.archive.ScatteredArchive;
  */
 public class EmbeddedGlassFish
 {
+	private static final String DEFAULT_REALM_FILE = "file";
+	private static final String DEFAULT_REALM_ADMIN = "admin-realm";
+	private static final String DEFAULT_REALM_CERTIFICATE = "certificate";
 	private GlassFishRuntime runtime;
 	private GlassFish glassfish;
 	private Deployer deployer;
@@ -57,6 +63,14 @@ public class EmbeddedGlassFish
 		glassFishProperties.setPort("http-listener", httpPort);
 		glassFishProperties.setPort("https-listener", httpsPort);
 		glassfish = runtime.newGlassFish(glassFishProperties);
+
+		// Workaround for a bug: GlassFish can't always find its own JAAS config...
+		Configuration jaasConfiguration = Configuration.getConfiguration();
+		if (jaasConfiguration.getAppConfigurationEntry("fileRealm") == null)
+		{
+			System.setProperty("java.security.auth.login.config", getClass().getResource("/config/login.conf").toString());
+			javax.security.auth.login.Configuration.getConfiguration().refresh();
+		}
 	}
 
 
@@ -96,33 +110,116 @@ public class EmbeddedGlassFish
 		commandRunner = glassfish.getCommandRunner();
 	}
 
-	public void addFileRealm(FileRealm fileRealm)
+	public void addFileRealm(FileRealm fileRealm) throws GlassFishException
 	{
-		// TODO: Add method to add a user here.
-		// TODO: Test form login.
-		// TODO: Add configuration option to add users to ConfiguredEmbeddedGlassFishMojo.
-		// TODO: Increase branch coverage to 100% (line coverage is 100%).
+		String realmName = fileRealm.getRealmName();
+		if (DEFAULT_REALM_CERTIFICATE.equals(realmName))
+		{
+			throw new GlassFishException(String.format(
+			    "Cannot add users to the realm '%s': it is not a file realm.", DEFAULT_REALM_CERTIFICATE));
+		}
+		if (!DEFAULT_REALM_FILE.equals(realmName) && !DEFAULT_REALM_ADMIN.equals(realmName))
+		{
+			String keyfile = writeString("keyfile", "");
+			asadmin("create-auth-realm", "--classname", "com.sun.enterprise.security.auth.realm.file.FileRealm",
+			        "--property", "file=" + keyfile + ":jaas-context=fileRealm", realmName);			
+		}
 
-		asadmin("list-auth-realms");
-		//asadmin("list-file-users");
-		//asadmin("create-file-user", "--passwordfile", "passwds.txt", "--groups", "users:administrators", "oscar");
-		//asadmin("list-file-users");
+		for (User user : fileRealm.getUsers())
+		{
+			addUser(realmName, user);
+		}
+		// TODO: Increase branch coverage to 100% (line coverage is 100%).
+		// TODO: Add asadmin commands to execute to the configuration (version 2 ??).
+	}
+
+
+	/**
+	 * Write a String to a temporary file, and return the path to the file.
+	 *
+	 * @param prefix the prefix for the temporary file; can be used to identify the type of content
+	 * @param text   the String to write
+	 * @return the path to the temporary file
+	 * @throws GlassFishException when the file cannot be written
+	 */
+	private String writeString(String prefix, String text) throws GlassFishException
+	{
+		try
+		{
+			File file = File.createTempFile(prefix, "");
+			file.deleteOnExit();
+
+			FileWriter writer = new FileWriter(file);
+			writer.write(text);
+			writer.write("\n");
+			writer.close();
+
+			return file.getAbsolutePath();
+		}
+		catch (IOException e)
+		{
+			throw new GlassFishException("Failed to write password to a file (needed because of GlassFish)", e);
+		}
 	}
 
 
 	private void asadmin(String command, String... arguments)
 	{
-		System.out.printf("GlassFish asadmin: %s %s\n", command, java.util.Arrays.<String>asList(arguments));
+		//System.out.printf("GlassFish asadmin: %s %s\n", command, java.util.Arrays.<String>asList(arguments));
 		CommandResult result = commandRunner.run(command, arguments);
-		System.out.printf("GlassFish [%s] %s\n", result.getExitStatus(), result.getOutput());
+		//System.out.printf("GlassFish [%s] %s\n", result.getExitStatus(), result.getOutput());
 		//noinspection ThrowableResultOfMethodCallIgnored
-		if (result.getFailureCause() != null)
+		Throwable failureCause = result.getFailureCause();
+		if (failureCause != null)
 		{
-			//noinspection ThrowableResultOfMethodCallIgnored
-			result.getFailureCause().printStackTrace();
+			failureCause.printStackTrace();
 		}
 	}
 
+
+	/**
+	 * Create a user for a file realm.
+	 *
+	 * @param realmName the name of the file realm to add a user to
+	 * @param user     the user to add
+	 * @throws GlassFishException when the user cannot be added
+	 */
+	private void addUser(String realmName, User user) throws GlassFishException
+	{
+		String roles = join(user.getRoles(), ":");
+		if (roles == null || roles.isEmpty())
+		{
+			roles = "user";
+		}
+
+		String passwordFilePath = writeString("passwd", "AS_ADMIN_USERPASSWORD=" + user.getPassword());
+
+		asadmin("create-file-user", "--authrealmname", realmName, "--groups", roles, "--passwordfile",
+		        passwordFilePath, user.getUsername());
+	}
+
+
+	/**
+	 * Join the elements of a String array using a separator.
+	 *
+	 * @param array     a String array
+	 * @param separator the separator to use
+	 * @return the joined String
+	 */
+	private static String join(String[] array, String separator)
+	{
+		String result = null;
+		if (array != null)
+		{
+			StringBuilder buffer = new StringBuilder();
+			for (String element : array)
+			{
+				buffer.append(separator).append(element);
+			}
+			result = buffer.substring(separator.length());
+		}
+		return result;
+	}
 
 
 	/**
