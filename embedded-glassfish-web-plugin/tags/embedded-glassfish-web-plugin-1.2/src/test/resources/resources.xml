@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN"
+        "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
+<resources>
+    <jdbc-connection-pool name="MyConnectionPool"
+            datasource-classname="org.hsqldb.jdbc.JDBCDataSource" non-transactional-connections="true"
+            steady-pool-size="3" max-pool-size="10" idle-timeout-in-seconds="300"
+            connection-leak-reclaim="true" connection-leak-timeout-in-seconds="60"
+            statement-leak-reclaim="true" statement-leak-timeout-in-seconds="60"
+            connection-validation-method="meta-data" is-connection-validation-required="true">
+        <property name="Url" value="jdbc:hsqldb:mem:TestDB"/>
+        <property name="User" value="sa"/>
+        <property name="Password" value=""/>
+    </jdbc-connection-pool>
+    <!--<jdbc-resource enabled="true" object-type="user" pool-name="MyConnectionPool" jndi-name="jdbc/myDataSource"/>-->
+    <jdbc-resource pool-name="MyConnectionPool" jndi-name="jdbc/myDataSource"/>
+</resources>
