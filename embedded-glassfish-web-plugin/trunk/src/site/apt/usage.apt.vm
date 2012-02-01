@@ -3,7 +3,7 @@
 	---
 	Oscar Westra van Holthe - Kind
 	---
-	2012-01-09
+	2012-02-01
 	---
 
 Embedded GlassFish Web Plugin: Usage
@@ -41,6 +41,8 @@ mvn glassfish:run
   ...
 </project>
 +---
+
+  This minimal configuration starts your artifact, and any <<<war>>> dependencies, in an embedded GlassFish instance.
 
 
 * Integration testing
@@ -225,5 +227,5 @@ mvn glassfish:run
 </project>
 +---
 
-
+  As an added bonus, any <<<ear>>> dependencies of your artifact are also deployed when starting the embedded GlassFish instance.
 

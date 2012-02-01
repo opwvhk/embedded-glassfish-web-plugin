@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
-import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,7 +67,8 @@ public class EmbeddedGlassFish
 		Configuration jaasConfiguration = Configuration.getConfiguration();
 		if (jaasConfiguration.getAppConfigurationEntry("fileRealm") == null)
 		{
-			System.setProperty("java.security.auth.login.config", getClass().getResource("/config/login.conf").toString());
+			System.setProperty("java.security.auth.login.config", getClass().getResource("/config/login.conf")
+					.toString());
 			javax.security.auth.login.Configuration.getConfiguration().refresh();
 		}
 	}
@@ -85,8 +85,9 @@ public class EmbeddedGlassFish
 		GlassFish.Status status = glassfish.getStatus();
 		if (running && status != GlassFish.Status.STARTED)
 		{
-			throw new IllegalStateException(String.format(
-					"The embedded GlassFish instance is not running (status=%s).", status));
+			throw new IllegalStateException(String.format("The embedded GlassFish instance is not running " +
+			                                              "(status=%s).",
+			                                              status));
 		}
 		if (!running && status != GlassFish.Status.INIT && status != GlassFish.Status.STOPPED)
 		{
@@ -110,19 +111,27 @@ public class EmbeddedGlassFish
 		commandRunner = glassfish.getCommandRunner();
 	}
 
-	public void addFileRealm(FileRealm fileRealm) throws GlassFishException
+
+	/**
+	 * Add a file realm to the GlassFish instance
+	 *
+	 * @param fileRealm the realm to add
+	 * @throws IOException when the temporary password file (a GlassFish oddity) cannot be written
+	 * @throws GlassFishException when the realm cannot be added
+	 */
+	public void addFileRealm(FileRealm fileRealm) throws IOException, GlassFishException
 	{
 		String realmName = fileRealm.getRealmName();
 		if (DEFAULT_REALM_CERTIFICATE.equals(realmName))
 		{
-			throw new GlassFishException(String.format(
-			    "Cannot add users to the realm '%s': it is not a file realm.", DEFAULT_REALM_CERTIFICATE));
+			throw new GlassFishException(String.format("Cannot add users to the realm '%s': it is not a file realm.",
+			                                           DEFAULT_REALM_CERTIFICATE));
 		}
 		if (!DEFAULT_REALM_FILE.equals(realmName) && !DEFAULT_REALM_ADMIN.equals(realmName))
 		{
 			String keyfile = writeString("keyfile", "");
 			asadmin("create-auth-realm", "--classname", "com.sun.enterprise.security.auth.realm.file.FileRealm",
-			        "--property", "file=" + keyfile + ":jaas-context=fileRealm", realmName);			
+			        "--property", "file=" + keyfile + ":jaas-context=fileRealm", realmName);
 		}
 
 		for (User user : fileRealm.getUsers())
@@ -140,26 +149,19 @@ public class EmbeddedGlassFish
 	 * @param prefix the prefix for the temporary file; can be used to identify the type of content
 	 * @param text   the String to write
 	 * @return the path to the temporary file
-	 * @throws GlassFishException when the file cannot be written
+	 * @throws IOException when the file cannot be written
 	 */
-	private String writeString(String prefix, String text) throws GlassFishException
+	private String writeString(String prefix, String text) throws IOException
 	{
-		try
-		{
-			File file = File.createTempFile(prefix, "");
-			file.deleteOnExit();
+		File file = File.createTempFile(prefix, "");
+		file.deleteOnExit();
 
-			FileWriter writer = new FileWriter(file);
-			writer.write(text);
-			writer.write("\n");
-			writer.close();
+		FileWriter writer = new FileWriter(file);
+		writer.write(text);
+		writer.write("\n");
+		writer.close();
 
-			return file.getAbsolutePath();
-		}
-		catch (IOException e)
-		{
-			throw new GlassFishException("Failed to write password to a file (needed because of GlassFish)", e);
-		}
+		return file.getAbsolutePath();
 	}
 
 
@@ -181,10 +183,11 @@ public class EmbeddedGlassFish
 	 * Create a user for a file realm.
 	 *
 	 * @param realmName the name of the file realm to add a user to
-	 * @param user     the user to add
+	 * @param user      the user to add
+	 * @throws IOException when the temporary password file (a GlassFish oddity) cannot be written
 	 * @throws GlassFishException when the user cannot be added
 	 */
-	private void addUser(String realmName, User user) throws GlassFishException
+	private void addUser(String realmName, User user) throws IOException, GlassFishException
 	{
 		String roles = join(user.getRoles(), ":");
 		if (roles == null || roles.isEmpty())
