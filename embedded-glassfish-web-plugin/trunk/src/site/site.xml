@@ -8,7 +8,6 @@
 	</bannerLeft>
 	<body>
 		<links>
-			<item name="Instant Developer Experience" href="instant_developer_experience.html"/>
 			<item name="GlassFish" href="http://glassfish.java.net/"/>
 		</links>
 		<menu name="Overview">

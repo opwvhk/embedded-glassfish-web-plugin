@@ -3,30 +3,6 @@
 		xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd" title="Frequently Asked Questions" toplink="false">
 	<part id="general">
 		<title>General</title>
-		<faq id="ide-what">
-			<question>What is an Instant Developer Experience?</question>
-			<answer>
-				<p>
-					A way of both organizing and configuring your project. It's essence it that a basic environment
-					(only Java, a build tool and your IDE of choice) plus the project source code is everything you
-					need. To read more, there is a page <a href="./instant_developer_experience.html">dedicated to
-					it</a>.
-				</p>
-			</answer>
-		</faq>
-		<faq id="ide-why">
-			<question>Why is it important?</question>
-			<answer>
-				<p>
-					Because it allows new developers to start coding immediately, without needing to bother you to get
-					their environment working. To read more, there is a page
-					<a href="./instant_developer_experience.html">dedicated to it</a>.
-				</p>
-			</answer>
-		</faq>
-	</part>
-	<part id="plugin">
-		<title>Plugin</title>
 		<faq id="web-profile">
 			<question>Why is the plugin called &quot;Web Plugin&quot;?</question>
 			<answer>
