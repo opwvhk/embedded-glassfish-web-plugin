@@ -8,7 +8,7 @@
 
 Embedded GlassFish Web Plugin: Introduction
 
-  The Embedded GlassFish Web Plugin allows you to create an {{{./instant_developer_experience.html}Instant Developer
+  The Embedded GlassFish Web Plugin allows you to create an {{{../instant_developer_experience.html}Instant Developer
   Experience}} where your web application is compiled and deployed to an
   {{{http://embedded-glassfish.java.net/}embedded GlassFish}} server providing the
   {{{http://www.oracle.com/technetwork/java/javaee/overview/index.html}JavaEE Web Profile}}. You can also let it
