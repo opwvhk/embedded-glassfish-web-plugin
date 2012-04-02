@@ -29,14 +29,14 @@ import org.glassfish.embeddable.archive.ScatteredArchive;
  */
 public class EmbeddedGlassFish
 {
-	private static final String DEFAULT_REALM_FILE = "file";
-	private static final String DEFAULT_REALM_ADMIN = "admin-realm";
+	private static final String DEFAULT_REALM_FILE        = "file";
+	private static final String DEFAULT_REALM_ADMIN       = "admin-realm";
 	private static final String DEFAULT_REALM_CERTIFICATE = "certificate";
 	private GlassFishRuntime runtime;
-	private GlassFish glassfish;
-	private Deployer deployer;
-	private CommandRunner commandRunner;
-	private Stack<String> deployedArtifacts;
+	private GlassFish        glassfish;
+	private Deployer         deployer;
+	private CommandRunner    commandRunner;
+	private Stack<String>    deployedArtifacts;
 
 
 	/**
@@ -85,9 +85,8 @@ public class EmbeddedGlassFish
 		GlassFish.Status status = glassfish.getStatus();
 		if (running && status != GlassFish.Status.STARTED)
 		{
-			throw new IllegalStateException(String.format("The embedded GlassFish instance is not running " +
-			                                              "(status=%s).",
-			                                              status));
+			throw new IllegalStateException(String.format(
+					"The embedded GlassFish instance is not running " + "(status=%s).", status));
 		}
 		if (!running && status != GlassFish.Status.INIT && status != GlassFish.Status.STOPPED)
 		{
@@ -116,7 +115,7 @@ public class EmbeddedGlassFish
 	 * Add a file realm to the GlassFish instance
 	 *
 	 * @param fileRealm the realm to add
-	 * @throws IOException when the temporary password file (a GlassFish oddity) cannot be written
+	 * @throws IOException        when the temporary password file (a GlassFish oddity) cannot be written
 	 * @throws GlassFishException when the realm cannot be added
 	 */
 	public void addFileRealm(FileRealm fileRealm) throws IOException, GlassFishException
@@ -130,16 +129,15 @@ public class EmbeddedGlassFish
 		if (!DEFAULT_REALM_FILE.equals(realmName) && !DEFAULT_REALM_ADMIN.equals(realmName))
 		{
 			String keyfile = writeString("keyfile", "");
-			asadmin("create-auth-realm", "--classname", "com.sun.enterprise.security.auth.realm.file.FileRealm",
-			        "--property", "file=" + keyfile + ":jaas-context=fileRealm", realmName);
+			asadminInternal("create-auth-realm", "--classname", "com.sun.enterprise.security.auth.realm.file.FileRealm",
+			                "--property", "file=" + keyfile + ":jaas-context=fileRealm", realmName);
 		}
 
 		for (User user : fileRealm.getUsers())
 		{
 			addUser(realmName, user);
 		}
-		// TODO: Increase branch coverage to 100% (line coverage is 100%).
-		// TODO: Add asadmin commands to execute to the configuration (version 2 ??).
+		// TODO: Increase line and branch coverage to 100%.
 	}
 
 
@@ -165,11 +163,9 @@ public class EmbeddedGlassFish
 	}
 
 
-	private void asadmin(String command, String... arguments)
+	private void asadminInternal(String command, String... arguments)
 	{
-		//System.out.printf("GlassFish asadmin: %s %s\n", command, java.util.Arrays.<String>asList(arguments));
 		CommandResult result = commandRunner.run(command, arguments);
-		//System.out.printf("GlassFish [%s] %s\n", result.getExitStatus(), result.getOutput());
 		//noinspection ThrowableResultOfMethodCallIgnored
 		Throwable failureCause = result.getFailureCause();
 		if (failureCause != null)
@@ -180,11 +176,24 @@ public class EmbeddedGlassFish
 
 
 	/**
+	 * Execute an asadmin command.
+	 *
+	 * @param command   the command to execute
+	 * @param arguments any arguments for the command
+	 * @return the command result
+	 */
+	public CommandResult asadmin(String command, String... arguments)
+	{
+		return commandRunner.run(command, arguments);
+	}
+
+
+	/**
 	 * Create a user for a file realm.
 	 *
 	 * @param realmName the name of the file realm to add a user to
 	 * @param user      the user to add
-	 * @throws IOException when the temporary password file (a GlassFish oddity) cannot be written
+	 * @throws IOException        when the temporary password file (a GlassFish oddity) cannot be written
 	 * @throws GlassFishException when the user cannot be added
 	 */
 	private void addUser(String realmName, User user) throws IOException, GlassFishException
@@ -197,8 +206,8 @@ public class EmbeddedGlassFish
 
 		String passwordFilePath = writeString("passwd", "AS_ADMIN_USERPASSWORD=" + user.getPassword());
 
-		asadmin("create-file-user", "--authrealmname", realmName, "--groups", roles, "--passwordfile",
-		        passwordFilePath, user.getUsername());
+		asadminInternal("create-file-user", "--authrealmname", realmName, "--groups", roles, "--passwordfile",
+		                passwordFilePath, user.getUsername());
 	}
 
 
@@ -273,8 +282,8 @@ public class EmbeddedGlassFish
 
 
 	/**
-	 * Undeploy the artifact that was the last one deployed with {@link #deployArtifact(ScatteredArchive, String)}.
-	 * Calling this method again undeploys the artifact deployed before that, etc.
+	 * Undeploy the artifact that was the last one deployed with {@link #deployArtifact(ScatteredArchive, String)}. Calling
+	 * this method again undeploys the artifact deployed before that, etc.
 	 *
 	 * @throws GlassFishException when undeployment fails
 	 */
