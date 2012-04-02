@@ -82,6 +82,13 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 	@SuppressWarnings({"UnusedDeclaration"})
 	private File webAppSourceDirectory;
 	/**
+	 * A file to configure <code>java.util.logging</code>, which is the logging system used by GlassFish.
+	 *
+	 * @parameter
+	 */
+	@SuppressWarnings({"UnusedDeclaration"})
+	private File loggingProperties;
+	/**
 	 * A resource file that defines the external resources required by the web application. Similar to
 	 * <code>${webAppSourceDirectory}/WEB-INF/glassfish-resources.xml</code>, but some environments require database
 	 * passwords etc. to be kept outside your application. This simulates that by loading the resources before the
@@ -92,13 +99,6 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 	@SuppressWarnings({"UnusedDeclaration"})
 	private File glassFishResources;
 	/**
-	 * A file to configure <code>java.util.logging</code>, which is the logging system used by GlassFish.
-	 *
-	 * @parameter
-	 */
-	@SuppressWarnings({"UnusedDeclaration"})
-	private File loggingProperties;
-	/**
 	 * The file realms to create prior to deploying the application. The predefined realms &quot;file&quot; and
 	 * &quot;admin-realm&quot; are recognized and not created anew, though the users you define are added. The
 	 * predefined realm &quot;certificate&quot; is also recognized, but will generate an error (it is not a file realm).
@@ -107,6 +107,14 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 	 */
 	@SuppressWarnings({"UnusedDeclaration", "MismatchedReadAndWriteOfArray"})
 	private FileRealm[] fileRealms;
+	/**
+	 * Commands to <code>asadmin</code> to execute prior to deploying the application. The commands required for the
+	 * properties <code>glassFishResources</code> and <code>fileRealms</code> will already be executed.
+	 *
+	 * @parameter
+	 */
+	@SuppressWarnings({"UnusedDeclaration", "MismatchedReadAndWriteOfArray"})
+	private Command[] extraCommands;
 	/**
 	 * The HTTP port GlassFish should listen on. Defaults to 8080.
 	 *
@@ -172,6 +180,16 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 			for (FileRealm fileRealm : fileRealms)
 			{
 				instance.addFileRealm(fileRealm);
+			}
+		}
+
+		// Execute any other asadmin commands.
+
+		if (extraCommands != null)
+		{
+			for (Command command : extraCommands)
+			{
+				logCommandResult(instance.asadmin(command.getCommand(), command.getParameters()));
 			}
 		}
 
