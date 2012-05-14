@@ -61,7 +61,8 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 		EmbeddedGlassFish mockGlassFish = createMock(EmbeddedGlassFish.class);
 		replay(mockGlassFish);
 
-		ConfiguredEmbeddedGlassFishMojo mojo = createAndConfigureMojo(false, null, LOGGING_CONFIGURATION_FILE, mockGlassFish);
+		ConfiguredEmbeddedGlassFishMojo mojo = createAndConfigureMojo(false, null, LOGGING_CONFIGURATION_FILE,
+		                                                              mockGlassFish);
 		mojo.configureLogging();
 
 		verify(mockGlassFish);
@@ -122,8 +123,8 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 		// Runtime classpath
 		assertTrue(archiveContents.contains("WEB-INF/lib/minimal_jar2.jar"));
 		// Test classpath
-		assertFalse(archiveContents.contains("WEB-INF/classes/net/sf/opk/glassfish/ConfiguredEmbeddedGlassFishMojo" +
-		                                     ".class"));
+		assertFalse(archiveContents.contains(
+				"WEB-INF/classes/net/sf/opk/glassfish/ConfiguredEmbeddedGlassFishMojo.class"));
 		assertFalse(archiveContents.contains("WEB-INF/lib/minimal_jar3.jar"));
 	}
 
@@ -183,8 +184,8 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 		// Runtime classpath
 		assertTrue(archiveContents.contains("WEB-INF/lib/minimal_jar2.jar"));
 		// Test classpath
-		assertTrue(archiveContents.contains("WEB-INF/classes/net/sf/opk/glassfish/ConfiguredEmbeddedGlassFishMojo" +
-		                                    ".class"));
+		assertTrue(archiveContents.contains(
+				"WEB-INF/classes/net/sf/opk/glassfish/ConfiguredEmbeddedGlassFishMojo.class"));
 		assertTrue(archiveContents.contains("WEB-INF/lib/minimal_jar3.jar"));
 	}
 

@@ -8,7 +8,7 @@ import org.glassfish.embeddable.GlassFishException;
  * Abstract MOJO to control a single embedded GlassFish instance. Note that this class keeps track of its embedded
  * GlassFish instance in, and hence is <strong>NOT</strong> thread-safe.
  *
- * @author <a href="mailto:oscar.westra@42.nl">Oscar Westra van Holthe - Kind</a>
+ * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
 public abstract class EmbeddedGlassFishMojo extends AbstractMojo
 {

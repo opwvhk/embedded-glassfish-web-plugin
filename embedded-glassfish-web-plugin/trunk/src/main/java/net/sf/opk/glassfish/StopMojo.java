@@ -8,7 +8,7 @@ import org.glassfish.embeddable.GlassFishException;
 /**
  * MOJO to stop the embedded GlassFish instance that was started with this plugin.
  *
- * @author <a href="mailto:oscar.westra@42.nl">Oscar Westra van Holthe - Kind</a>
+ * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  * @goal stop
  * @phase post-integration-test
  * @requiresDependencyResolution test

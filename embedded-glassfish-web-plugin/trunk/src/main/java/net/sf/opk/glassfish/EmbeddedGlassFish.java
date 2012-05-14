@@ -25,18 +25,18 @@ import org.glassfish.embeddable.archive.ScatteredArchive;
  * Facade for an embedded GlassFish server. Note that although this class starts threads with the {@link #startup()}
  * method, it is NOT thread-safe.
  *
- * @author <a href="mailto:oscar.westra@42.nl">Oscar Westra van Holthe - Kind</a>
+ * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
 public class EmbeddedGlassFish
 {
-	private static final String DEFAULT_REALM_FILE        = "file";
-	private static final String DEFAULT_REALM_ADMIN       = "admin-realm";
+	private static final String DEFAULT_REALM_FILE = "file";
+	private static final String DEFAULT_REALM_ADMIN = "admin-realm";
 	private static final String DEFAULT_REALM_CERTIFICATE = "certificate";
 	private GlassFishRuntime runtime;
-	private GlassFish        glassfish;
-	private Deployer         deployer;
-	private CommandRunner    commandRunner;
-	private Stack<String>    deployedArtifacts;
+	private GlassFish glassfish;
+	private Deployer deployer;
+	private CommandRunner commandRunner;
+	private Stack<String> deployedArtifacts;
 
 
 	/**

@@ -19,10 +19,10 @@ import org.glassfish.embeddable.archive.ScatteredArchive;
 
 
 /**
- * Abstract MOJO to control an embedded GlassFish instance with the current project as scattered archive. Note that
- * this class keeps track of its embedded GlassFish instance in, and hence is <strong>NOT</strong> thread-safe.
+ * Abstract MOJO to control an embedded GlassFish instance with the current project as scattered archive. Note that this
+ * class keeps track of its embedded GlassFish instance, and hence is <strong>NOT</strong> thread-safe.
  *
- * @author <a href="mailto:oscar.westra@42.nl">Oscar Westra van Holthe - Kind</a>
+ * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
 public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfish.EmbeddedGlassFishMojo
 {
@@ -140,6 +140,7 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 		return new EmbeddedGlassFish(httpPort, httpsPort);
 	}
 
+
 	/**
 	 * Configure logging for GlassFish using the specified {@link #loggingProperties} (if any).
 	 */
@@ -155,7 +156,7 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 			catch (IOException e)
 			{
 				getLog().warn(String.format("Logging not initialized; failed to read %s (%s)", loggingProperties,
-						e.getMessage()));
+				                            e.getMessage()));
 			}
 		}
 	}
