@@ -13,7 +13,7 @@ import org.glassfish.embeddable.archive.ScatteredArchive;
 /**
  * MOJO to run the artifact in an embedded GlassFish instance.
  *
- * @author <a href="mailto:oscar.westra@42.nl">Oscar Westra van Holthe - Kind</a>
+ * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  * @goal run
  * @execute phase="test-compile"
  * @ phase pre-integration-test

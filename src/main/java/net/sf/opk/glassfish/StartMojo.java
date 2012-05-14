@@ -10,7 +10,7 @@ import org.glassfish.embeddable.GlassFishException;
 /**
  * MOJO to start an embedded GlassFish instance with the artifact deployed in it.
  *
- * @author <a href="mailto:oscar.westra@42.nl">Oscar Westra van Holthe - Kind</a>
+ * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  * @goal start
  * @phase pre-integration-test
  * @requiresDependencyResolution test

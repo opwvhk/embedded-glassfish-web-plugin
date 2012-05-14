@@ -117,8 +117,7 @@ public class MojoTestBase
 			throws Exception
 	{
 		mojo = configureBaseMojo(mojo, embeddedGlassFish);
-		return configureMojo(mojo, APP_NAME, APP_PATH, CLASSES_DIRECTORY, null, WEBAPP_DIRECTORY, null, null,
-		                     HTTP_PORT,
+		return configureMojo(mojo, APP_NAME, APP_PATH, CLASSES_DIRECTORY, null, WEBAPP_DIRECTORY, null, null, HTTP_PORT,
 		                     HTTPS_PORT);
 	}
 
@@ -134,8 +133,7 @@ public class MojoTestBase
 
 	private <M extends ConfiguredEmbeddedGlassFishMojo> M configureMojo(M mojo, String name, String path,
 	                                                                    File classesDirectory,
-	                                                                    File testClassesDirectory,
-	                                                                    File webAppDirectory,
+	                                                                    File testClassesDirectory, File webAppDirectory,
 	                                                                    File resources, File loggingConfiguration,
 	                                                                    int httpPort, int httpsPort) throws Exception
 	{

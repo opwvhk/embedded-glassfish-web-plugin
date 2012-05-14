@@ -22,7 +22,7 @@ mvn glassfish:run
 * Basic configuration
 
   Since the Embedded GlassFish Web Plugin is available in Maven Central, configuring it is as simple as this:
-  
+
 +---
 <project>
   ...
@@ -125,17 +125,17 @@ mvn glassfish:run
 <!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN"
         "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
 <resources>
-    <jdbc-connection-pool name="MyConnectionPool"
-            datasource-classname="org.hsqldb.jdbc.JDBCDataSource" non-transactional-connections="true"
-            steady-pool-size="3" max-pool-size="10" idle-timeout-in-seconds="300"
-            connection-leak-reclaim="true" connection-leak-timeout-in-seconds="60"
-            statement-leak-reclaim="true" statement-leak-timeout-in-seconds="60"
-            connection-validation-method="meta-data" is-connection-validation-required="true">
-        <property name="Url" value="jdbc:hsqldb:mem:TestDB"/>
-        <property name="User" value="sa"/>
-        <property name="Password" value=""/>
-    </jdbc-connection-pool>
-    <jdbc-resource pool-name="MyConnectionPool" jndi-name="jdbc/myDataSource"/>
+	<jdbc-connection-pool name="MyConnectionPool" datasource-classname="org.hsqldb.jdbc.JDBCDataSource"
+	                      non-transactional-connections="true"
+	                      steady-pool-size="3" max-pool-size="10" idle-timeout-in-seconds="300"
+	                      connection-leak-reclaim="true" connection-leak-timeout-in-seconds="60"
+	                      statement-leak-reclaim="true" statement-leak-timeout-in-seconds="60"
+	                      connection-validation-method="meta-data" is-connection-validation-required="true">
+		<property name="Url" value="jdbc:hsqldb:mem:TestDB"/>
+		<property name="User" value="sa"/>
+		<property name="Password" value=""/>
+	</jdbc-connection-pool>
+	<jdbc-resource pool-name="MyConnectionPool" jndi-name="jdbc/myDataSource"/>
 </resources>
 +---
 
@@ -143,7 +143,7 @@ mvn glassfish:run
 * Authentication
 
   To secure your web application, you'll want to configure authentication. You can do that like so:
-  
+
 +---
 <project>
   ...
@@ -177,8 +177,9 @@ mvn glassfish:run
 </project>
 +---
 
-  The configuration above defines a realm with one user. The user has two roles (actually groups in GlassFish terms, but by default each group is a JavaEE role). You can use this realm using the snippet
-  below in your <<<web.xml>>>. The only important part is the <<<realm-name>>> tag.
+  The configuration above defines a realm with one user. The user has two roles (actually groups in GlassFish terms,
+  but by default each group is a JavaEE role). You can use this realm using the snippet below in your <<<web.xml>>>.
+  The only important part is the <<<realm-name>>> tag.
 
 +---
   <login-config>
@@ -227,5 +228,6 @@ mvn glassfish:run
 </project>
 +---
 
-  As an added bonus, any <<<ear>>> dependencies of your artifact are also deployed when starting the embedded GlassFish instance.
+  As an added bonus, any <<<ear>>> dependencies of your artifact are also deployed when starting the embedded
+  GlassFish instance.
 
