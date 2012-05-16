@@ -1,0 +1,37 @@
+	---
+	Introduction
+	---
+	Oscar Westra van Holthe - Kind
+	---
+	2012-01-09
+	---
+
+Embedded GlassFish Web Plugin: Introduction
+
+  The Embedded GlassFish Web Plugin allows you to create an {{{../instant_developer_experience.html}Instant Developer
+  Experience}} where your web application is compiled and deployed to an
+  {{{http://embedded-glassfish.java.net/}embedded GlassFish}} server providing the
+  {{{http://www.oracle.com/technetwork/java/javaee/overview/index.html}JavaEE Web Profile}}. You can also let it
+  provide the full JavaEE API by tweaking the plugin dependencies.
+
+
+* Goals overview
+
+  This plugin has three goals:
+
+  * {{{./run-mojo.html}glassfish:run}} is used to run the artifact in an embedded GlassFish instance.
+
+  * {{{./start-mojo.html}glassfish:start}} is like the <run> mojo, except the build continues after statring the
+    GlassFish instance.
+
+  * {{{./stop-mojo.html}glassfish:stop}} is used to stop the GlassFish instance started with the <start> goal.
+
+
+* Usage
+
+  General instructions on how to use the plugin, as well as some configuration examples, are on the
+  {{{./usage.html}Usage}} page. The specific configuration options that exist can be found from the
+  {{{./plugin-info.html} Goals}} page.
+
+  In case you still have questions regarding the plugin's usage, please have a look at the {{{./faq.html}FAQ}}.
+
