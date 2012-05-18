@@ -189,6 +189,46 @@ mvn glassfish:run
 +---
 
 
+* Extra configuration using <<<asadmin>>>
+
+  Sometimes, you wish you could issue specific configuration commands. This is also possible, as demonstrated by the example below. This particular example
+  enables Comet support, but you can issue any <<<asadmin>>> command. In fact, the resource and authentication configurations above are also implemented
+  using this mechanism.
+
++---
+<project>
+  ...
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <extraCommands>
+            <extraCommand>
+              <command>set</command>
+              <parameters>
+                <parameter>server-config.network-config.protocols.protocol.http-1.http.comet-support-enabled="true"</parameter>
+              </parameters>
+            </extraCommand>
+            <extraCommand>
+              <command>list</command>
+              <parameters>
+                <parameter>*</parameter>
+              </parameters>
+            </extraCommand>
+          </extraCommands>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  ...
+</project>
+
++---
+
+
 * Using the full JavaEE API
 
   If the JavaEE Web Profile is not sufficient, i.e. you need the full JavaEE API, you can also do this. The following
