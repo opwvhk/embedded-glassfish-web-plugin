@@ -52,6 +52,8 @@ public class EmbeddedGlassFishMojoTest
 	@Test
 	public void testShutdownWithNull() throws Exception
 	{
+		mojo.setGlassFishShutdownHook(null);
+
         // Should not throw.
 		mojo.shutdown();
 	}
