@@ -19,7 +19,7 @@
 	<parent>
 		<groupId>net.sf.opk</groupId>
 		<artifactId>opk-parent</artifactId>
-		<version>5-SNAPSHOT</version>
+		<version>5</version>
 	</parent>
 	<artifactId>embedded-glassfish-web-plugin</artifactId>
 	<version>1.4-SNAPSHOT</version>
