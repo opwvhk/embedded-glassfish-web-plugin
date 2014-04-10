@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Oscar Westra van Holthe - Kind
+ * Copyright 2012-2014 Oscar Westra van Holthe - Kind
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
  * compliance with the License.
@@ -15,53 +15,27 @@
  */
 package net.sf.opk.glassfish;
 
+import java.util.concurrent.Callable;
+
 import org.apache.maven.plugin.AbstractMojo;
-import org.glassfish.embeddable.GlassFishException;
 
 
 /**
- * Abstract MOJO to control a single embedded GlassFish instance. Note that this class keeps track of its embedded
- * GlassFish instance in, and hence is <strong>NOT</strong> thread-safe.
+ * Abstract MOJO to control (shutdown) a single embedded GlassFish instance.
  *
  * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
 public abstract class EmbeddedGlassFishMojo extends AbstractMojo
 {
 	/**
-	 * The ebmedded GlassFish instance.
+	 * Shutdown hook for the embedded GlassFish instance.
 	 */
-	private static EmbeddedGlassFish glassfish = null;
+	private static Callable<?> glassFishShutdownHook = null;
 
 
-	/**
-	 * Get the embedded GlassFish instance. Initialize one if this is the firast call.
-	 *
-	 * @return an embedded GlassFish instance
-	 * @throws GlassFishException when initialization fails
-	 */
-	protected EmbeddedGlassFish getEmbeddedGlassFish() throws GlassFishException
+	protected void setGlassFishShutdownHook(Callable<?> glassFishShutdownHook)
 	{
-		if (glassfish == null)
-		{
-			glassfish = createEmbeddedGlassFish();
-		}
-		return glassfish;
-	}
-
-
-	/**
-	 * Create the embedded GlassFish instance.
-	 *
-	 * @return an embedded GlassFish instance
-	 * @throws GlassFishException when initialization fails
-	 */
-	protected abstract EmbeddedGlassFish createEmbeddedGlassFish() throws GlassFishException;
-
-
-	protected void startup() throws GlassFishException
-	{
-		EmbeddedGlassFish instance = getEmbeddedGlassFish();
-		instance.startup();
+		EmbeddedGlassFishMojo.glassFishShutdownHook = glassFishShutdownHook;
 	}
 
 
@@ -69,14 +43,13 @@ public abstract class EmbeddedGlassFishMojo extends AbstractMojo
 	{
 		try
 		{
-			if (glassfish != null)
+			if (glassFishShutdownHook != null)
 			{
-				glassfish.shutdown();
-				//noinspection UnusedAssignment
-				glassfish = null;
+				glassFishShutdownHook.call();
+				glassFishShutdownHook = null;
 			}
 		}
-		catch (GlassFishException e)
+		catch (Exception e)
 		{
 			getLog().error("GlassFish failed to shutdown. Please stop the JVM.", e);
 		}

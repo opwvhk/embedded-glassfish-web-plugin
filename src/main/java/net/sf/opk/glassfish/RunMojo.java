@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Oscar Westra van Holthe - Kind
+ * Copyright 2012-2014 Oscar Westra van Holthe - Kind
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
  * compliance with the License.
@@ -21,32 +21,26 @@ import java.io.InputStreamReader;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.glassfish.embeddable.GlassFishException;
-import org.glassfish.embeddable.archive.ScatteredArchive;
-
+import org.apache.maven.plugins.annotations.Execute;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 /**
  * MOJO to run the artifact in an embedded GlassFish instance.
  *
  * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
- * @goal run
- * @execute phase="test-compile"
- * @ phase pre-integration-test
- * @requiresDependencyResolution test
- * @threadSafe false
  */
+@Mojo(name = "run", requiresDependencyResolution = ResolutionScope.TEST)
+@Execute(phase = LifecyclePhase.TEST_COMPILE)
 public class RunMojo extends ConfiguredEmbeddedGlassFishMojo
 {
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException
 	{
-		configureLogging();
-
 		try
 		{
-			ScatteredArchive archive = createScatteredArchive();
-
-			startupWithArtifact(archive);
+			startup();
 
 			boolean continueRunning = true;
 			BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
@@ -63,17 +57,13 @@ public class RunMojo extends ConfiguredEmbeddedGlassFishMojo
 				}
 				else
 				{
-					redeploy(archive);
+					redeploy();
 				}
 			}
 		}
-		catch (GlassFishException e)
-		{
-			throw new MojoFailureException("GlassFish failed to do our bidding.", e);
-		}
 		catch (IOException e)
 		{
-			throw new MojoFailureException("I/O failure.", e);
+			throw new MojoExecutionException("I/O failure.", e);
 		}
 		finally
 		{

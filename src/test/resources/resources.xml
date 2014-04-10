@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright 2012 Oscar Westra van Holthe - Kind
+  ~ Copyright 2012-2014 Oscar Westra van Holthe - Kind
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
   ~ compliance with the License.
@@ -17,7 +17,7 @@
 <!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN"
 		"http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
 <resources>
-	<jdbc-connection-pool name="MyConnectionPool"
+	<jdbc-connection-pool name="HsqlConnectionPool" res-type="javax.sql.DataSource"
 	                      datasource-classname="org.hsqldb.jdbc.JDBCDataSource" non-transactional-connections="true"
 	                      steady-pool-size="3" max-pool-size="10" idle-timeout-in-seconds="300"
 	                      connection-leak-reclaim="true" connection-leak-timeout-in-seconds="60"
@@ -27,6 +27,5 @@
 		<property name="User" value="sa"/>
 		<property name="Password" value=""/>
 	</jdbc-connection-pool>
-	<!--<jdbc-resource enabled="true" object-type="user" pool-name="MyConnectionPool" jndi-name="jdbc/myDataSource"/>-->
-	<jdbc-resource pool-name="MyConnectionPool" jndi-name="jdbc/myDataSource"/>
+	<jdbc-resource enabled="true" pool-name="HsqlConnectionPool" jndi-name="jdbc/hsqlDataSource"/>
 </resources>

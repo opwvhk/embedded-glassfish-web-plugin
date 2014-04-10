@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Oscar Westra van Holthe - Kind
+ * Copyright 2012-2014 Oscar Westra van Holthe - Kind
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
  * compliance with the License.
@@ -33,7 +33,7 @@ import javax.sql.DataSource;
  */
 public class EchoDataSource extends HttpServlet
 {
-	@Resource(name = "jdbc/myDataSource")
+	@Resource(name = "jdbc/hsqlDataSource")
 	private DataSource dataSource;
 
 

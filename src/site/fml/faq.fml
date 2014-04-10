@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright 2012 Oscar Westra van Holthe - Kind
+  ~ Copyright 2012-2014 Oscar Westra van Holthe - Kind
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
   ~ compliance with the License.
@@ -25,6 +25,15 @@
 				<p>
 					Because it provides the JavaEE Web Profile by default. If you need full JavaEE support, read the
 					<a href="./usage.html#Using_the_full_JavaEE_API">Usage Page</a>.
+				</p>
+			</answer>
+		</faq>
+		<faq id="glassfish-version">
+			<question>Which GlassFish versions does the plugin support?</question>
+			<answer>
+				<p>
+					By default, GlassFish 4 Web Profile is used. Supported versions are the Full and Web Profiles from
+					GlassFish 3.1.2.2 and GlassFish 4.0.
 				</p>
 			</answer>
 		</faq>

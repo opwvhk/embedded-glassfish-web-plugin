@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Oscar Westra van Holthe - Kind
+ * Copyright 2012-2014 Oscar Westra van Holthe - Kind
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
  * compliance with the License.
@@ -15,42 +15,23 @@
  */
 package net.sf.opk.glassfish;
 
-import java.io.IOException;
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.glassfish.embeddable.GlassFishException;
-
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 /**
  * MOJO to start an embedded GlassFish instance with the artifact deployed in it.
  *
  * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
- * @goal start
- * @phase pre-integration-test
- * @requiresDependencyResolution test
- * @threadSafe false
  */
+@Mojo(name = "start", defaultPhase = LifecyclePhase.PRE_INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.TEST)
 public class StartMojo extends ConfiguredEmbeddedGlassFishMojo
 {
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException
 	{
-		configureLogging();
-
-		try
-		{
-			startupWithArtifact(createScatteredArchive());
-		}
-		catch (GlassFishException e)
-		{
-			shutdown();
-			throw new MojoFailureException("GlassFish failed to do our bidding.", e);
-		}
-		catch (IOException e)
-		{
-			shutdown();
-			throw new MojoFailureException("I/O failure.", e);
-		}
+		startup();
 	}
 }

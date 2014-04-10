@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Oscar Westra van Holthe - Kind
+ * Copyright 2012-2014 Oscar Westra van Holthe - Kind
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
  * compliance with the License.
@@ -15,14 +15,18 @@
  */
 package net.sf.opk.glassfish;
 
+import java.util.concurrent.Callable;
+
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.glassfish.embeddable.GlassFishException;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
-import static org.junit.Assert.assertNotNull;
 
 
 /**
@@ -30,72 +34,75 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
-public class EmbeddedGlassFishMojoTest extends MojoTestBase
+public class EmbeddedGlassFishMojoTest
 {
-	@Test
-	public void testGlassfishInitialization() throws Exception
-	{
-		EmbeddedGlassFish glassfish = null;
-		try
-		{
-			EmbeddedGlassFishMojo mojo = createAndConfigureMojo(null);
-			glassfish = mojo.getEmbeddedGlassFish();
+    private EmbeddedGlassFishMojo mojo;
 
-			assertNotNull(glassfish); // We test the class itself in a dedicated test case.
-		}
-		finally
-		{
-			if (glassfish != null)
-			{
-				glassfish.shutdown();
-			}
-		}
-	}
+    @Before
+    public void initialize() throws Exception {
 
+        mojo = new EmbeddedGlassFishMojo() {
+            @Override
+            public void execute() throws MojoExecutionException, MojoFailureException {
+
+            }
+        };
+    }
 
 	@Test
-	public void testStartup() throws Exception
+	public void testShutdownWithNull() throws Exception
 	{
-		EmbeddedGlassFish mockGlassFish = createMock(EmbeddedGlassFish.class);
-		mockGlassFish.startup();
-		expectLastCall().once();
-		replay(mockGlassFish);
-
-		EmbeddedGlassFishMojo mojo = createAndConfigureMojo(mockGlassFish);
-		mojo.startup();
-
-		verify(mockGlassFish);
-	}
-
-
-	@Test
-	public void testShutdown1() throws Exception
-	{
-		EmbeddedGlassFish mockGlassFish = createMock(EmbeddedGlassFish.class);
-
-		mockGlassFish.shutdown();
-		expectLastCall().once();
-		replay(mockGlassFish);
-
-		EmbeddedGlassFishMojo mojo = createAndConfigureMojo(mockGlassFish);
+        // Should not throw.
 		mojo.shutdown();
-
-		verify(mockGlassFish);
 	}
 
 
 	@Test
-	public void testShutdown2() throws Exception
+	public void testShutdownThrowing() throws Exception
 	{
-		EmbeddedGlassFish mockGlassFish = createMock(EmbeddedGlassFish.class);
+        Callable<Void> shutdownHook = createMock(Callable.class);
 
-		mockGlassFish.shutdown();
+        // Set shutdown hook from different MOJO (happens with start and stop goals too).
+        new EmbeddedGlassFishMojo() {
+            @Override
+            public void execute() throws MojoExecutionException, MojoFailureException {
+
+            }
+        }.setGlassFishShutdownHook(shutdownHook);
+
+        shutdownHook.call();
 		expectLastCall().andThrow(new GlassFishException("Test")).once();
-		replay(mockGlassFish);
+		replay(shutdownHook);
 
-		EmbeddedGlassFishMojo mojo = createAndConfigureMojo(mockGlassFish);
-		mojo.shutdown();
+        // Should not throw.
+        mojo.shutdown();
 
-		verify(mockGlassFish);
+		verify(shutdownHook);
+	}
+
+
+	@Test
+	public void testShutdownNormal() throws Exception
+	{
+        Callable<Void> shutdownHook = createMock(Callable.class);
+
+        // Set shutdown hook from different MOJO (happens with start and stop goals too).
+        new EmbeddedGlassFishMojo() {
+            @Override
+            public void execute() throws MojoExecutionException, MojoFailureException {
+
+            }
+        }.setGlassFishShutdownHook(shutdownHook);
+
+        shutdownHook.call();
+		expectLastCall().andReturn(null).once();
+		replay(shutdownHook);
+
+        // Should not throw.
+        mojo.shutdown();
+        // Second call should not do anything.
+        mojo.shutdown();
+
+		verify(shutdownHook);
 	}
 }

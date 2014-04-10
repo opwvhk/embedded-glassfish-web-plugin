@@ -3,7 +3,7 @@
 	---
 	Oscar Westra van Holthe - Kind
 	---
-	2012-02-01
+	2014-04-12
 	---
 
 Embedded GlassFish Web Plugin: Usage
@@ -107,7 +107,7 @@ mvn glassfish:run
           <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
-            <version>2.2.6</version>
+            <version>2.3.0</version>
           </dependency>
         </dependencies>
       </plugin>
@@ -125,7 +125,7 @@ mvn glassfish:run
 <!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN"
         "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
 <resources>
-	<jdbc-connection-pool name="MyConnectionPool" datasource-classname="org.hsqldb.jdbc.JDBCDataSource"
+	<jdbc-connection-pool name="HsqlConnectionPool" datasource-classname="org.hsqldb.jdbc.JDBCDataSource"
 	                      non-transactional-connections="true"
 	                      steady-pool-size="3" max-pool-size="10" idle-timeout-in-seconds="300"
 	                      connection-leak-reclaim="true" connection-leak-timeout-in-seconds="60"
@@ -135,7 +135,7 @@ mvn glassfish:run
 		<property name="User" value="sa"/>
 		<property name="Password" value=""/>
 	</jdbc-connection-pool>
-	<jdbc-resource pool-name="MyConnectionPool" jndi-name="jdbc/myDataSource"/>
+	<jdbc-resource pool-name="HsqlConnectionPool" jndi-name="jdbc/hsqlDataSource"/>
 </resources>
 +---
 
@@ -191,9 +191,9 @@ mvn glassfish:run
 
 * Extra configuration using <<<asadmin>>>
 
-  Sometimes, you wish you could issue specific configuration commands. This is also possible, as demonstrated by the example below. This particular example
-  enables Comet support, but you can issue any <<<asadmin>>> command. In fact, the resource and authentication configurations above are also implemented
-  using this mechanism.
+  Sometimes, you wish you could issue specific configuration commands. This is also possible, as demonstrated by the
+  example below. This particular example enables Comet support, but you can issue any <<<asadmin>>> command. In fact,
+  the resource and authentication configurations above are also implemented using this mechanism.
 
 +---
 <project>
@@ -250,16 +250,32 @@ mvn glassfish:run
             <version>${project.version}</version>
             <exclusions>
               <exclusion>
-                <groupId>org.glassfish.extras</groupId>
+                <!-- Here we exclude default: GlassFish 4.0 with the JavaEE 7 Web Profile -->
+                <groupId>org.glassfish.main.extras</groupId>
                 <artifactId>glassfish-embedded-web</artifactId>
               </exclusion>
             </exclusions>
           </dependency>
+          <!-- Use this for GlassFish 4.02 with the JavaEE 7 Full Profile
           <dependency>
-            <groupId>org.glassfish.extras</groupId>
+            <groupId>org.glassfish.main.extras</groupId>
             <artifactId>glassfish-embedded-all</artifactId>
-            <version>3.1.1</version>
+            <version>4.0</version>
           </dependency>
+          <!-- Use this for GlassFish 3.1.2.2 with the JavaEE 6 Full Profile
+          <dependency>
+            <groupId>org.glassfish.main.extras</groupId>
+            <artifactId>glassfish-embedded-all</artifactId>
+            <version>3.1.2.2</version>
+          </dependency>
+          -->
+          <!-- Use this for GlassFish 3.1.2.2 with the JavaEE 6 Web Profile
+          <dependency>
+            <groupId>org.glassfish.main.extras</groupId>
+            <artifactId>glassfish-embedded-web</artifactId>
+            <version>3.1.2.2</version>
+          </dependency>
+          -->
         </dependencies>
       </plugin>
     </plugins>
