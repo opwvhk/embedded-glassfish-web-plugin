@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Oscar Westra van Holthe - Kind
+ * Copyright 2012-2014 Oscar Westra van Holthe - Kind
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
  * compliance with the License.
@@ -15,119 +15,57 @@
  */
 package net.sf.opk.glassfish;
 
-import java.io.IOException;
-
-import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.glassfish.embeddable.GlassFishException;
-import org.glassfish.embeddable.archive.ScatteredArchive;
+import org.hamcrest.core.Is;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-import static org.easymock.EasyMock.anyObject;
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
-
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 /**
  * Test class for the class {@link StartMojo}.
  *
  * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
-public class StartMojoTest extends MojoTestBase
-{
-	@Test
-	public void testExecute1() throws Exception
-	{
-		EmbeddedGlassFish mockGlassFish = createMock(EmbeddedGlassFish.class);
-		mockGlassFish.startup();
-		expectLastCall().once();
-		mockGlassFish.deployApplication(WAR_ARTIFACT);
-		expectLastCall().once();
-		mockGlassFish.deployArtifact(anyObject(ScatteredArchive.class), eq(APP_PATH));
-		expectLastCall().once();
-		replay(mockGlassFish);
+public class StartMojoTest extends MojoTestBase {
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
-		StartMojo mojo = configureMojo(new StartMojo(), mockGlassFish);
-		mojo.execute();
+    @Test
+    public void testStartupNormal() throws Exception {
+        expect(glassFishWebPluginRunner.call()).andReturn(null);
+        replay(glassFishWebPluginRunner, redeployHook, shutdownHook);
 
-		verify(mockGlassFish);
-	}
+        StartMojo mojo = configureMojo(new StartMojo(), glassFishWebPluginRunner);
+        mojo.execute();
 
+        assertSame(redeployHook, getField(ConfiguredEmbeddedGlassFishMojo.class, "webApplicationRedeployHook").get(mojo));
+        assertSame(shutdownHook, getField(EmbeddedGlassFishMojo.class, "glassFishShutdownHook").get(null));
 
-	@Test(expected = MojoFailureException.class)
-	public void testExecute2() throws Exception
-	{
-		EmbeddedGlassFish mockGlassFish = createMock(EmbeddedGlassFish.class);
-		try
-		{
-			mockGlassFish.startup();
-			expectLastCall().once();
-			mockGlassFish.deployApplication(WAR_ARTIFACT);
-			expectLastCall().andThrow(new GlassFishException("Test")).once();
-			mockGlassFish.shutdown();
-			expectLastCall().once();
-			replay(mockGlassFish);
+        verify(glassFishWebPluginRunner, redeployHook, shutdownHook);
+    }
 
-			StartMojo mojo = configureMojo(new StartMojo(), mockGlassFish);
-			mojo.execute();
-		}
-		finally
-		{
-			verify(mockGlassFish);
-		}
-	}
+    @Test
+    public void testStartupFailure() throws Exception {
+        GlassFishException oops = new GlassFishException("Oops");
+        expect(glassFishWebPluginRunner.call()).andThrow(oops);
+        replay(glassFishWebPluginRunner, redeployHook, shutdownHook);
 
+        expectedException.expect(MojoExecutionException.class);
+        expectedException.expectCause(Is.is(oops));
 
-	@Test(expected = MojoFailureException.class)
-	public void testExecute3() throws Exception
-	{
-		EmbeddedGlassFish mockGlassFish = createMock(EmbeddedGlassFish.class);
-		try
-		{
-			mockGlassFish.startup();
-			expectLastCall().once();
-			mockGlassFish.deployApplication(WAR_ARTIFACT);
-			expectLastCall().once();
-			mockGlassFish.deployArtifact(anyObject(ScatteredArchive.class), eq(APP_PATH));
-			expectLastCall().andThrow(new GlassFishException("Test")).once();
-			mockGlassFish.shutdown();
-			expectLastCall().once();
-			replay(mockGlassFish);
+        StartMojo mojo = configureMojo(new StartMojo(), glassFishWebPluginRunner);
+        mojo.execute();
 
-			StartMojo mojo = configureMojo(new StartMojo(), mockGlassFish);
-			mojo.execute();
-		}
-		finally
-		{
-			verify(mockGlassFish);
-		}
-	}
+        assertNull(ConfiguredEmbeddedGlassFishMojo.class.getDeclaredField("webApplicationRedeployHook").get(mojo));
+        assertNull(EmbeddedGlassFishMojo.class.getDeclaredField("glassFishShutdownHook").get(null));
 
-
-	@Test(expected = MojoFailureException.class)
-	public void testExecute4() throws Exception
-	{
-		EmbeddedGlassFish mockGlassFish = createMock(EmbeddedGlassFish.class);
-		try
-		{
-			mockGlassFish.startup();
-			expectLastCall().once();
-			mockGlassFish.deployApplication(WAR_ARTIFACT);
-			expectLastCall().once();
-			mockGlassFish.deployArtifact(anyObject(ScatteredArchive.class), eq(APP_PATH));
-			expectLastCall().andThrow(new IOException("Test")).once();
-			mockGlassFish.shutdown();
-			expectLastCall().once();
-			replay(mockGlassFish);
-
-			StartMojo mojo = configureMojo(new StartMojo(), mockGlassFish);
-			mojo.execute();
-		}
-		finally
-		{
-			verify(mockGlassFish);
-		}
-	}
+        verify(glassFishWebPluginRunner, redeployHook, shutdownHook);
+    }
 }

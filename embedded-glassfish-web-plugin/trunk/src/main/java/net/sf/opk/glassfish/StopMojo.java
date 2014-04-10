@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Oscar Westra van Holthe - Kind
+ * Copyright 2012-2014 Oscar Westra van Holthe - Kind
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
  * compliance with the License.
@@ -17,28 +17,18 @@ package net.sf.opk.glassfish;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.glassfish.embeddable.GlassFishException;
-
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 
 /**
  * MOJO to stop the embedded GlassFish instance that was started with this plugin.
  *
  * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
- * @goal stop
- * @phase post-integration-test
- * @requiresDependencyResolution test
- * @threadSafe false
  */
+@Mojo(name = "stop", defaultPhase = LifecyclePhase.POST_INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.TEST)
 public class StopMojo extends EmbeddedGlassFishMojo
 {
-	@Override
-	protected EmbeddedGlassFish createEmbeddedGlassFish() throws GlassFishException
-	{
-		// Nothing useful is possible, and this will throw an NPE.
-		return null;
-	}
-
-
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException
 	{

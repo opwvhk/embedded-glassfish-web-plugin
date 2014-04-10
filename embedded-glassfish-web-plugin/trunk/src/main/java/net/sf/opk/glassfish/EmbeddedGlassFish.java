@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Oscar Westra van Holthe - Kind
+ * Copyright 2012-2014 Oscar Westra van Holthe - Kind
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
  * compliance with the License.
@@ -18,12 +18,17 @@ package net.sf.opk.glassfish;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URI;
-import java.util.ArrayList;
+import java.nio.charset.Charset;
+import java.security.SecureRandom;
+import java.util.ArrayDeque;
 import java.util.Collections;
-import java.util.List;
-import java.util.Stack;
-import javax.security.auth.login.Configuration;
+import java.util.Deque;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.CommandResult;
@@ -34,38 +39,55 @@ import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import org.glassfish.embeddable.archive.ScatteredArchive;
+import org.glassfish.security.common.SSHA;
 
 
 /**
- * Facade for an embedded GlassFish server. Note that although this class starts threads with the {@link #startup()}
- * method, it is NOT thread-safe.
+ * Facade for an embedded GlassFish server, FOR INTERNAL USE ONLY. It is NOT thread-safe.
  *
  * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
 public class EmbeddedGlassFish
 {
+	/**
+	 * Logger for this class.
+	 */
+	private static final Logger LOGGER = Logger.getLogger(EmbeddedGlassFish.class.getName());
+	private static final Map<CommandResult.ExitStatus, Level> ASADMIN_RESULT_LOG_LEVELS;
 	private static final String DEFAULT_REALM_FILE = "file";
 	private static final String DEFAULT_REALM_ADMIN = "admin-realm";
 	private static final String DEFAULT_REALM_CERTIFICATE = "certificate";
+	private static final SecureRandom rng = new SecureRandom();
+	private File configDir;
 	private GlassFishRuntime runtime;
 	private GlassFish glassfish;
 	private Deployer deployer;
 	private CommandRunner commandRunner;
-	private Stack<String> deployedArtifacts;
+	private Deque<String> deployedArtifacts;
+
+
+	static
+	{
+		EnumMap<CommandResult.ExitStatus, Level> asadminResultLogLevels = new EnumMap<>(CommandResult.ExitStatus.class);
+		asadminResultLogLevels.put(CommandResult.ExitStatus.SUCCESS, Level.INFO);
+		asadminResultLogLevels.put(CommandResult.ExitStatus.WARNING, Level.WARNING);
+		asadminResultLogLevels.put(CommandResult.ExitStatus.FAILURE, Level.SEVERE);
+		ASADMIN_RESULT_LOG_LEVELS = Collections.unmodifiableMap(asadminResultLogLevels);
+	}
 
 
 	/**
 	 * Create and initialize an embedded GlassFish instance.
 	 *
 	 * @param httpPort  the port to use to listen to HTTP requests
-	 * @param httpsPort the port to use to listen to HTTPS requests
+	 * @param httpsPort the port to use to listen to HTTPS requests, if any
 	 * @throws GlassFishException when the server cannot be initialized
 	 */
-	public EmbeddedGlassFish(int httpPort, int httpsPort) throws GlassFishException
+	public EmbeddedGlassFish(int httpPort, Integer httpsPort) throws GlassFishException
 	{
 		deployer = null;
 		commandRunner = null;
-		deployedArtifacts = new Stack<String>();
+		deployedArtifacts = new ArrayDeque<>();
 
 		System.setProperty("glassfish.embedded.tmpdir", "target");
 
@@ -75,50 +97,19 @@ public class EmbeddedGlassFish
 
 		GlassFishProperties glassFishProperties = new GlassFishProperties();
 		glassFishProperties.setPort("http-listener", httpPort);
-		glassFishProperties.setPort("https-listener", httpsPort);
+		if (httpsPort != null)
+		{
+			glassFishProperties.setPort("https-listener", httpsPort);
+		}
 		glassfish = runtime.newGlassFish(glassFishProperties);
 
 		// Workaround for a bug: GlassFish can't always find its own JAAS config...
-		Configuration jaasConfiguration = Configuration.getConfiguration();
-		if (jaasConfiguration.getAppConfigurationEntry("fileRealm") == null)
-		{
-			System.setProperty("java.security.auth.login.config", getClass().getResource("/config/login.conf")
-					.toString());
-			javax.security.auth.login.Configuration.getConfiguration().refresh();
-		}
-	}
+		System.setProperty("java.security.auth.login.config", getClass().getResource("/config/login.conf").toString());
+		javax.security.auth.login.Configuration.getConfiguration().refresh();
 
-
-	/**
-	 * Check the status of the embedded GlassFish instance. If incorrect, an {@code IllegalStateException} is thrown.
-	 *
-	 * @param running whether the embedded GlassFish instance should be running or not
-	 * @throws GlassFishException when the GlassFish status is unavailable
-	 */
-	private void checkStatus(boolean running) throws GlassFishException
-	{
-		GlassFish.Status status = glassfish.getStatus();
-		if (running && status != GlassFish.Status.STARTED)
-		{
-			throw new IllegalStateException(String.format(
-					"The embedded GlassFish instance is not running " + "(status=%s).", status));
-		}
-		if (!running && status != GlassFish.Status.INIT && status != GlassFish.Status.STOPPED)
-		{
-			throw new IllegalStateException(String.format(
-					"The embedded GlassFish instance is not ready to run (status=%s).", status));
-		}
-	}
-
-
-	/**
-	 * Start the embedded GlassFish instance.
-	 *
-	 * @throws GlassFishException when the server cannot be started
-	 */
-	public void startup() throws GlassFishException
-	{
-		checkStatus(false);
+		// Bootstrapping GlassFish points this system property a directory. The mkdirs() thus always succeeds.
+		configDir = new File(System.getProperty("com.sun.aas.installRoot"), "config");
+		configDir.mkdirs();
 
 		glassfish.start();
 		deployer = glassfish.getDeployer();
@@ -127,30 +118,57 @@ public class EmbeddedGlassFish
 
 
 	/**
-	 * Add a file realm to the GlassFish instance
+	 * Add a file realm to the GlassFish instance.
 	 *
 	 * @param fileRealm the realm to add
 	 * @throws IOException        when the temporary password file (a GlassFish oddity) cannot be written
 	 * @throws GlassFishException when the realm cannot be added
 	 */
-	public void addFileRealm(FileRealm fileRealm) throws IOException, GlassFishException
+	public void addFileRealmWithUsers(FileRealm fileRealm) throws IOException, GlassFishException
 	{
 		String realmName = fileRealm.getRealmName();
 		if (DEFAULT_REALM_CERTIFICATE.equals(realmName))
 		{
-			throw new GlassFishException(String.format("Cannot add users to the realm '%s': it is not a file realm.",
-			                                           DEFAULT_REALM_CERTIFICATE));
-		}
-		if (!DEFAULT_REALM_FILE.equals(realmName) && !DEFAULT_REALM_ADMIN.equals(realmName))
-		{
-			String keyfile = writeString("keyfile", "");
-			asadminInternal("create-auth-realm", "--classname", "com.sun.enterprise.security.auth.realm.file.FileRealm",
-			                "--property", "file=" + keyfile + ":jaas-context=fileRealm", realmName);
+			LOGGER.warning(String.format("Cannot add users to the realm '%s': it is not a file realm. Skipping it.",
+			                             DEFAULT_REALM_CERTIFICATE));
+			return;
 		}
 
-		for (User user : fileRealm.getUsers())
+		File keyFile;
+		boolean createRealm = false;
+		if (DEFAULT_REALM_FILE.equals(realmName))
 		{
-			addUser(realmName, user);
+			keyFile = new File(configDir, "keyfile");
+		}
+		else if (DEFAULT_REALM_ADMIN.equals(realmName))
+		{
+			keyFile = new File(configDir, "admin-keyfile");
+		}
+		else
+		{
+			keyFile = new File(writeStringToConfigFile("keyfile", ""));
+			createRealm = true;
+		}
+
+		try (PrintWriter writer = new PrintWriter(new FileWriter(keyFile, true)))
+		{
+			for (User user : fileRealm.getUsers())
+			{
+				byte[] salt = new byte[8];
+				rng.nextBytes(salt);
+				byte[] password = user.getPassword().getBytes(Charset.defaultCharset());
+				byte[] hash = SSHA.compute(salt, password, "SHA");
+				String ssha = SSHA.encode(salt, hash, "SHA");
+				// anonymous;{SSHA}w9WBMj/jphXlgDWPgozFSSzUgy5Fd/ONd7nPtw==;asadmin
+
+				writer.println(user.getUsername() + ';' + ssha + ';' + join(user.getRoles(), ","));
+			}
+		}
+		if (createRealm)
+		{
+			String keyFilePath = keyFile.getPath().replace("\\", "/").replace(":", "\\:");
+			asadmin("create-auth-realm", "--classname", "com.sun.enterprise.security.auth.realm.file.FileRealm",
+			        "--property", "file=" + keyFilePath + ":jaas-context=fileRealm", realmName);
 		}
 	}
 
@@ -163,65 +181,31 @@ public class EmbeddedGlassFish
 	 * @return the path to the temporary file
 	 * @throws IOException when the file cannot be written
 	 */
-	private String writeString(String prefix, String text) throws IOException
+	private String writeStringToConfigFile(String prefix, String text) throws IOException
 	{
-		File file = File.createTempFile(prefix, "");
+		File file = File.createTempFile(prefix, "", configDir);
 		file.deleteOnExit();
 
-		FileWriter writer = new FileWriter(file);
-		writer.write(text);
-		writer.write("\n");
-		writer.close();
-
-		return file.getAbsolutePath();
-	}
-
-
-	private void asadminInternal(String command, String... arguments)
-	{
-		CommandResult result = commandRunner.run(command, arguments);
-		//noinspection ThrowableResultOfMethodCallIgnored
-		Throwable failureCause = result.getFailureCause();
-		if (failureCause != null)
+		try (PrintWriter writer = new PrintWriter(new FileWriter(file), true))
 		{
-			failureCause.printStackTrace();
+			writer.println(text);
 		}
+
+		return file.getPath();
 	}
 
 
 	/**
-	 * Execute an asadmin command.
+	 * Execute an asadmin command and log the result.
 	 *
 	 * @param command   the command to execute
 	 * @param arguments any arguments for the command
-	 * @return the command result
 	 */
-	public CommandResult asadmin(String command, String... arguments)
+	public void asadmin(String command, String... arguments)
 	{
-		return commandRunner.run(command, arguments);
-	}
-
-
-	/**
-	 * Create a user for a file realm.
-	 *
-	 * @param realmName the name of the file realm to add a user to
-	 * @param user      the user to add
-	 * @throws IOException        when the temporary password file (a GlassFish oddity) cannot be written
-	 * @throws GlassFishException when the user cannot be added
-	 */
-	private void addUser(String realmName, User user) throws IOException, GlassFishException
-	{
-		String roles = join(user.getRoles(), ":");
-		if (roles == null || roles.isEmpty())
-		{
-			roles = "user";
-		}
-
-		String passwordFilePath = writeString("passwd", "AS_ADMIN_USERPASSWORD=" + user.getPassword());
-
-		asadminInternal("create-file-user", "--authrealmname", realmName, "--groups", roles, "--passwordfile",
-		                passwordFilePath, user.getUsername());
+		CommandResult result = commandRunner.run(command, arguments);
+		Level level = ASADMIN_RESULT_LOG_LEVELS.get(result.getExitStatus());
+		LOGGER.log(level, result.getOutput(), result.getFailureCause());
 	}
 
 
@@ -234,17 +218,12 @@ public class EmbeddedGlassFish
 	 */
 	private static String join(String[] array, String separator)
 	{
-		String result = null;
-		if (array != null)
+		StringBuilder buffer = new StringBuilder();
+		for (String element : array)
 		{
-			StringBuilder buffer = new StringBuilder();
-			for (String element : array)
-			{
-				buffer.append(separator).append(element);
-			}
-			result = buffer.substring(separator.length());
+			buffer.append(separator).append(element);
 		}
-		return result;
+		return buffer.substring(separator.length());
 	}
 
 
@@ -252,33 +231,27 @@ public class EmbeddedGlassFish
 	 * Add resources from a resource file to the embedded GlassFish instance.
 	 *
 	 * @param resourceFile the resource file
-	 * @return a command result that tells whether adding the resources succeeded
-	 * @throws GlassFishException when the resources cannot be added
 	 */
-	public CommandResult addResources(File resourceFile) throws GlassFishException
+	public void addResources(File resourceFile) throws GlassFishException
 	{
-		checkStatus(true);
-
-		return commandRunner.run("add-resources", resourceFile.getPath());
+		asadmin("add-resources", resourceFile.getPath());
 	}
 
 
 	/**
-	 * Deploy an application from a file. Undeploying is only possible with {@link #undeployAllApplications()}.
+	 * Deploy an application from a file. Undeploying is only done by {@link #shutdown()}.
 	 *
 	 * @param file the file to deploy
 	 * @throws GlassFishException when deployment fails
 	 */
 	public void deployApplication(File file) throws GlassFishException
 	{
-		checkStatus(true);
-
 		deployer.deploy(file);
 	}
 
 
 	/**
-	 * Deploy en artifact. The last deployed artifact can be undeployed with {@link #undeployLastArtifact()}.
+	 * Deploy en artifact. The last deployed artifact can be undeployed with {@link #undeployArtifacts()}.
 	 *
 	 * @param artifact    the artifact to deploy
 	 * @param contextRoot the context root to use
@@ -287,8 +260,6 @@ public class EmbeddedGlassFish
 	 */
 	public void deployArtifact(ScatteredArchive artifact, String contextRoot) throws IOException, GlassFishException
 	{
-		checkStatus(true);
-
 		URI location = artifact.toURI();
 		String application = deployer.deploy(location, "--contextroot", contextRoot, "--createtables", "true");
 		deployedArtifacts.push(application);
@@ -296,61 +267,30 @@ public class EmbeddedGlassFish
 
 
 	/**
-	 * Undeploy the artifact that was the last one deployed with {@link #deployArtifact(ScatteredArchive, String)}. Calling
-	 * this method again undeploys the artifact deployed before that, etc.
+	 * Undeploy the artifact that was the last one deployed with {@link #deployArtifact(ScatteredArchive, String)}.
+	 * Calling this method again undeploys the artifact deployed before that, etc.
 	 *
 	 * @throws GlassFishException when undeployment fails
 	 */
-	public void undeployLastArtifact() throws GlassFishException
+	public void undeployArtifacts() throws GlassFishException
 	{
-		if (!deployedArtifacts.empty())
+		for (String deployedArtifact : deployedArtifacts)
 		{
-			deployer.undeploy(deployedArtifacts.pop(), "--droptables", "true");
+			deployer.undeploy(deployedArtifact, "--droptables", "true");
 		}
 	}
 
 
 	/**
-	 * Undeploys all applications, artifacts first.
-	 *
-	 * @throws GlassFishException when undeployment fails
-	 */
-	public void undeployAllApplications() throws GlassFishException
-	{
-		while (!deployedArtifacts.empty())
-		{
-			deployer.undeploy(deployedArtifacts.pop(), "--droptables", "true");
-		}
-
-		List<String> deployedApplications = new ArrayList<String>(deployer.getDeployedApplications());
-		Collections.reverse(deployedApplications);
-		for (String application : deployedApplications)
-		{
-			deployer.undeploy(application);
-		}
-	}
-
-
-	/**
-	 * Stop and dispose of the embedded GlassFish instance.
+	 * Stop and dispose of the embedded GlassFish instance. Should only be called last, and only once.
 	 *
 	 * @throws GlassFishException when the server cannot be shutdown
 	 */
 	public void shutdown() throws GlassFishException
 	{
-		if (deployer != null)
-		{
-			undeployAllApplications();
-			deployer = null;
-		}
-		if (glassfish.getStatus() == GlassFish.Status.STARTED)
-		{
-			glassfish.stop();
-		}
-		if (glassfish.getStatus() != GlassFish.Status.DISPOSED)
-		{
-			glassfish.dispose();
-		}
+		deployer = null;
+		glassfish.stop();
+		glassfish.dispose();
 		runtime.shutdown();
 	}
 }

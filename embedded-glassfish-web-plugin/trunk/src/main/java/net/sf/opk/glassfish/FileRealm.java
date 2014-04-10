@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Oscar Westra van Holthe - Kind
+ * Copyright 2012-2014 Oscar Westra van Holthe - Kind
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
  * compliance with the License.
@@ -15,12 +15,16 @@
  */
 package net.sf.opk.glassfish;
 
+import java.io.Serializable;
+import java.util.Arrays;
+
+
 /**
  * Simple JavaBean to represent a FileRealm.
  *
  * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
-public class FileRealm
+public class FileRealm implements Serializable
 {
 	/**
 	 * The name of the realm as used in the {@code web.xml} of a web application.
@@ -53,5 +57,31 @@ public class FileRealm
 	public void setUsers(User[] users)
 	{
 		this.users = users;
+	}
+
+
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+
+		FileRealm that = (FileRealm)o;
+		return this.realmName.equals(that.realmName) && Arrays.equals(this.users, that.users);
+	}
+
+
+	@Override
+	public int hashCode()
+	{
+		int result = realmName.hashCode();
+		result = 31 * result + Arrays.hashCode(users);
+		return result;
 	}
 }

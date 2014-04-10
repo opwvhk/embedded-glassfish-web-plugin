@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Oscar Westra van Holthe - Kind
+ * Copyright 2012-2014 Oscar Westra van Holthe - Kind
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
  * compliance with the License.
@@ -16,21 +16,26 @@
 package net.sf.opk.glassfish;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.LogManager;
+import java.util.concurrent.Callable;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.glassfish.embeddable.CommandResult;
-import org.glassfish.embeddable.GlassFishException;
-import org.glassfish.embeddable.archive.ScatteredArchive;
 
 
 /**
@@ -42,222 +47,188 @@ import org.glassfish.embeddable.archive.ScatteredArchive;
 public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfish.EmbeddedGlassFishMojo
 {
 	/**
-	 * The maven project.
-	 *
-	 * @parameter default-value="${executedProject}"
-	 * @required
-	 * @readonly
+	 * This plugin, as configured.
 	 */
-	@SuppressWarnings({"UnusedDeclaration"})
+	@Parameter(defaultValue = "${plugin}", required = true, readonly = true)
+	private PluginDescriptor plugin;
+	/**
+	 * The maven project.
+	 */
+	@Parameter(defaultValue = "${executedProject}", required = true, readonly = true)
 	private MavenProject project;
 	/**
 	 * The context root to deploy the application at. Defaults to the artifact.
-	 *
-	 * @parameter expression="${project.build.finalName}" default-value="${project.build.finalName}"
 	 */
-	@SuppressWarnings({"UnusedDeclaration"})
-	private String applicationName;
-	/**
-	 * The context root to deploy the application at. Defaults to the artifact.
-	 *
-	 * @parameter default-value="/${project.artifactId}"
-	 */
-	@SuppressWarnings({"UnusedDeclaration"})
+	@Parameter(defaultValue = "/${project.artifactId}")
 	private String contextRoot;
 	/**
 	 * If true, the &lt;testClassesDirectory&gt; will be put on the runtime classpath before &lt;classesDirectory&gt;
 	 * and the dependencies of &lt;scope&gt;test&lt;scope&gt; will be put on the runtime classpath as well.
-	 *
-	 * @parameter default-value="false"
 	 */
-	@SuppressWarnings({"UnusedDeclaration"})
+	@Parameter(defaultValue = "false")
 	private boolean useTestClasspath;
 	/**
 	 * The directory where classes are compiled to.
-	 *
-	 * @parameter expression="${project.build.outputDirectory}" default-value="${project.build.outputDirectory}"
-	 * @required
 	 */
-	@SuppressWarnings({"UnusedDeclaration"})
+	//@Parameter(property = "project.build.outputDirectory", defaultValue = "${project.build.outputDirectory}", required = true)
+	@Parameter(property = "project.build.outputDirectory", required = true)
 	private File classesDirectory;
 	/**
 	 * The directory where classes test are compiled to.
-	 *
-	 * @parameter expression="${project.build.testOutputDirectory}" default-value="${project.build.testOutputDirectory}"
-	 * @required
 	 */
-	@SuppressWarnings({"UnusedDeclaration"})
+	@Parameter(property = "project.build.testOutputDirectory", required = true)
+	//@Parameter(property = "project.build.testOutputDirectory", defaultValue = "${project.build.testOutputDirectory}", required = true)
 	private File testClassesDirectory;
 	/**
 	 * The directory that contains the resources of the web application.
-	 *
-	 * @parameter default-value="${project.basedir}/src/main/webapp"
-	 * @required
 	 */
-	@SuppressWarnings({"UnusedDeclaration"})
+	@Parameter(defaultValue = "${project.basedir}/src/main/webapp", required = true)
 	private File webAppSourceDirectory;
 	/**
 	 * A file to configure <code>java.util.logging</code>, which is the logging system used by GlassFish.
-	 *
-	 * @parameter
 	 */
-	@SuppressWarnings({"UnusedDeclaration"})
+	@Parameter
 	private File loggingProperties;
 	/**
 	 * A resource file that defines the external resources required by the web application. Similar to
 	 * <code>${webAppSourceDirectory}/WEB-INF/glassfish-resources.xml</code>, but some environments require database
 	 * passwords etc. to be kept outside your application. This simulates that by loading the resources before the
 	 * application is deployed.
-	 *
-	 * @parameter
 	 */
-	@SuppressWarnings({"UnusedDeclaration"})
+	@Parameter
 	private File glassFishResources;
 	/**
 	 * The file realms to create prior to deploying the application. The predefined realms &quot;file&quot; and
 	 * &quot;admin-realm&quot; are recognized and not created anew, though the users you define are added. The
-	 * predefined realm &quot;certificate&quot; is also recognized, but will generate an error (it is not a file realm).
-	 *
-	 * @parameter
+	 * predefined realm &quot;certificate&quot; is also recognized, but will generate an error (it is not a file
+	 * realm).
 	 */
-	@SuppressWarnings({"UnusedDeclaration", "MismatchedReadAndWriteOfArray"})
+	@Parameter
 	private FileRealm[] fileRealms;
 	/**
 	 * Commands to <code>asadmin</code> to execute prior to deploying the application. The commands required for the
 	 * properties <code>glassFishResources</code> and <code>fileRealms</code> will already be executed.
-	 *
-	 * @parameter
 	 */
-	@SuppressWarnings({"UnusedDeclaration", "MismatchedReadAndWriteOfArray"})
+	@Parameter
 	private Command[] extraCommands;
 	/**
 	 * The HTTP port GlassFish should listen on. Defaults to 8080.
-	 *
-	 * @parameter default-value="8080"
 	 */
-	@SuppressWarnings({"UnusedDeclaration"})
+	@Parameter(defaultValue = "8080")
 	private int httpPort;
 	/**
-	 * The HTTPS port GlassFish should listen on. Defaults to 8443.
-	 *
-	 * @parameter default-value="8443"
+	 * The HTTPS port GlassFish should listen on. Defaults to 8443, 0 means "none".
 	 */
-	@SuppressWarnings({"UnusedDeclaration"})
+	@Parameter(defaultValue = "8443")
 	private int httpsPort;
 	/**
 	 * All dependencies, by type, in the iteration order of {@link MavenProject#getArtifacts()}.
 	 */
 	private Map<String, List<Artifact>> dependenciesByType = null;
-
-
-	protected EmbeddedGlassFish createEmbeddedGlassFish() throws GlassFishException
-	{
-		return new EmbeddedGlassFish(httpPort, httpsPort);
-	}
+	/**
+	 * The GlassFish web plugin runner.
+	 */
+	private Callable<Void> glassFishWebPluginRunner = null;
+	/**
+	 * Redeploy hook for our web application.
+	 */
+	private Callable<Void> webApplicationRedeployHook = null;
 
 
 	/**
-	 * Configure logging for GlassFish using the specified {@link #loggingProperties} (if any).
+	 * Configures and starts GlassFish.
 	 */
-	protected void configureLogging()
+	protected void startup() throws MojoExecutionException
 	{
-		if (loggingProperties != null)
+		Callable<Void> glassFishWebPluginRunner = getGlassFishWebPluginRunner();
+
+		try
 		{
-			try
-			{
-				LogManager.getLogManager().readConfiguration(new FileInputStream(loggingProperties));
-				getLog().info("Initialized logging using: " + loggingProperties.getPath());
-			}
-			catch (IOException e)
-			{
-				getLog().warn(String.format("Logging not initialized; failed to read %s (%s)", loggingProperties,
-				                            e.getMessage()));
-			}
+			glassFishWebPluginRunner.call();
+			setGlassFishShutdownHook((Callable<?>)callAccessor(glassFishWebPluginRunner, "getShutdownHook"));
+			webApplicationRedeployHook = callAccessor(glassFishWebPluginRunner, "getRedeployHook");
+		}
+		catch (Exception e)
+		{
+			throw new MojoExecutionException("Failed to start GlassFish.", e);
 		}
 	}
 
 
-	protected void startupWithArtifact(ScatteredArchive archive) throws GlassFishException, IOException
+	Callable<Void> getGlassFishWebPluginRunner() throws MojoExecutionException
 	{
-		startup();
-		EmbeddedGlassFish instance = getEmbeddedGlassFish();
+		try
+		{
+			if (glassFishWebPluginRunner == null)
+			{
+				byte[] configurationBytes = buildConfiguration();
+				glassFishWebPluginRunner = createGlassFishWebPluginRunner(configurationBytes);
+			}
+			return glassFishWebPluginRunner;
+		}
+		catch (Exception e)
+		{
+			throw new MojoExecutionException("Failed to create the plugin runner.", e);
+		}
+	}
 
-		// Deploy any resources
 
+	byte[] buildConfiguration() throws IOException
+	{
+		Integer actualHttpsPort = null;
+		if (httpsPort != 0)
+		{
+			actualHttpsPort = httpsPort;
+		}
+		GlassFishConfiguration configuration =
+				new GlassFishConfiguration(httpPort, actualHttpsPort, contextRoot, webAppSourceDirectory);
+		if (classesDirectory.exists())
+		{
+			configuration.addToWebApplicationClassPath(classesDirectory);
+			getLog().info("Adding directory " + classesDirectory + " to WEB-INF/classes");
+		}
+		if (useTestClasspath && testClassesDirectory.exists())
+		{
+			configuration.addToWebApplicationClassPath(testClassesDirectory);
+			getLog().info("Adding directory " + testClassesDirectory + " to WEB-INF/classes");
+		}
+		for (Artifact artifact : findDependencies("jar"))
+		{
+			configuration.addToWebApplicationClassPath(artifact.getFile());
+			getLog().info("Adding artifact " + artifact.getFile().getName() + " to WEB-INF/lib");
+		}
+
+		if (loggingProperties != null)
+		{
+			configuration.addLoggingProperties(loggingProperties);
+		}
 		if (glassFishResources != null)
 		{
-			logCommandResult(instance.addResources(glassFishResources));
+			configuration.addGlassFishResources(glassFishResources);
 		}
-
-		// Add any file realms
-
-		if (fileRealms != null)
-		{
-			for (FileRealm fileRealm : fileRealms)
-			{
-				instance.addFileRealm(fileRealm);
-			}
-		}
-
-		// Execute any other asadmin commands.
-
-		if (extraCommands != null)
-		{
-			for (Command command : extraCommands)
-			{
-				logCommandResult(instance.asadmin(command.getCommand(), command.getParameters()));
-			}
-		}
-
-		// We deploy both war and ear dependencies. The latter are not supported by the JavaEE Web Profile, but are
-		// supported by a full JavaEE embedded GlassFish (which can be used by substituting the plugin dependency).
+		configuration.addFileRealms(fileRealms);
+		configuration.addExtraCommands(extraCommands);
 
 		for (Artifact artifact : findDependencies("war", "ear"))
 		{
 			File file = artifact.getFile();
 			getLog().debug("Deploying dependency " + file.getName());
-			instance.deployApplication(file);
+			configuration.addExtraApplication(file);
 			getLog().info("Deployed dependency " + file.getName());
 		}
 
-		// Deploy the web application.
-
-		instance.deployArtifact(archive, contextRoot);
+		return configuration.toByteArray();
 	}
 
 
-	protected void logCommandResult(CommandResult result)
-	{
-		switch (result.getExitStatus())
-		{
-			case WARNING:
-				getLog().warn(result.getOutput());
-				break;
-			case FAILURE:
-				//noinspection ThrowableResultOfMethodCallIgnored
-				getLog().error(result.getOutput(), result.getFailureCause());
-				break;
-			default:
-				getLog().info(result.getOutput());
-				break;
-		}
-	}
-
-
-	/**
-	 * Finds all dependencies of given types that are in a valid dependency scope.
-	 *
-	 * @param types the dependency types, e.g. &quot;jar&quot;, &quot;war&quot;, ...
-	 * @return all dependencies of the given type
-	 */
-	protected List<Artifact> findDependencies(String... types)
+	private List<Artifact> findDependencies(String... types)
 	{
 		if (dependenciesByType == null)
 		{
 			resolveValidDependencies();
 		}
 
-		List<Artifact> result = new ArrayList<Artifact>();
+		List<Artifact> result = new ArrayList<>();
 		for (String type : types)
 		{
 			List<Artifact> dependencies = dependenciesByType.get(type);
@@ -272,7 +243,7 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 
 	private void resolveValidDependencies()
 	{
-		Set<String> validScopes = new HashSet<String>();
+		Set<String> validScopes = new HashSet<>();
 		validScopes.add(Artifact.SCOPE_COMPILE);
 		validScopes.add(Artifact.SCOPE_RUNTIME);
 		if (useTestClasspath)
@@ -280,16 +251,15 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 			validScopes.add(Artifact.SCOPE_TEST);
 		}
 
-		dependenciesByType = new HashMap<String, List<Artifact>>();
-		//noinspection unchecked
-		for (Artifact artifact : (Set<Artifact>)project.getArtifacts())
+		dependenciesByType = new HashMap<>();
+		for (Artifact artifact : project.getArtifacts())
 		{
 			if (validScopes.contains(artifact.getScope()))
 			{
 				List<Artifact> dependencies = dependenciesByType.get(artifact.getType());
 				if (dependencies == null)
 				{
-					dependencies = new ArrayList<Artifact>();
+					dependencies = new ArrayList<>();
 					dependenciesByType.put(artifact.getType(), dependencies);
 				}
 				dependencies.add(artifact);
@@ -298,35 +268,60 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 	}
 
 
-	protected void redeploy(ScatteredArchive archive) throws GlassFishException, IOException
+	private Callable<Void> createGlassFishWebPluginRunner(byte[] configurationBytes)
+			throws MalformedURLException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
+			       InvocationTargetException, InstantiationException
 	{
-		EmbeddedGlassFish instance = getEmbeddedGlassFish();
-		instance.undeployLastArtifact();
-		instance.deployArtifact(archive, contextRoot);
+		// The JVM always has these ClassLoaders:
+		// - bootstrap - all Java classes
+		// - extended  - bootstrap, plus all extended (jre/lib/ext) classes
+		// - system    - extended, plus the command line classpath
+
+		// We need everything from the JVM, but nothing more.
+
+		ClassLoader extendedClassLoader = ClassLoader.getSystemClassLoader().getParent();
+
+		URLClassLoader glassFishClassLoader = new URLClassLoader(getPluginClassPathWithoutMaven(), extendedClassLoader);
+		Thread.currentThread().setContextClassLoader(glassFishClassLoader);
+
+		Class<?> glassFishWebPluginRunnerClass =
+				glassFishClassLoader.loadClass(GlassFishWebPluginRunner.class.getName());
+		Constructor<?> constructor = glassFishWebPluginRunnerClass.getConstructor(byte[].class);
+		//noinspection PrimitiveArrayArgumentToVariableArgMethod
+		return (Callable<Void>)constructor.newInstance(configurationBytes);
 	}
 
 
-	protected ScatteredArchive createScatteredArchive() throws IOException
+	private URL[] getPluginClassPathWithoutMaven() throws MalformedURLException
 	{
-		ScatteredArchive archive = new ScatteredArchive(applicationName, ScatteredArchive.Type.WAR,
-		                                                webAppSourceDirectory);
-		if (classesDirectory.exists())
+		List<URL> classPath = new ArrayList<>();
+		// PluginDescriptor#getArtifacts() returns the entire classpath of the plugin, except for the Maven classes.
+		for (Artifact artifact : plugin.getArtifacts())
 		{
-			archive.addClassPath(classesDirectory);
-			getLog().info("Adding directory " + classesDirectory + " to WEB-INF/classes");
-		}
-		if (useTestClasspath && testClassesDirectory.exists())
-		{
-			archive.addClassPath(testClassesDirectory);
-			getLog().info("Adding directory " + testClassesDirectory + " to WEB-INF/classes");
+			classPath.add(artifact.getFile().toURI().toURL());
 		}
 
-		//noinspection unchecked
-		for (Artifact artifact : findDependencies("jar"))
+		return classPath.toArray(new URL[classPath.size()]);
+	}
+
+
+	static <T> T callAccessor(Object bean, String accessorName)
+			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException
+	{
+		Method accessor = bean.getClass().getMethod(accessorName);
+		return (T)accessor.invoke(bean);
+	}
+
+
+	protected void redeploy() throws MojoExecutionException
+	{
+		try
 		{
-			archive.addClassPath(artifact.getFile());
-			getLog().info("Adding artifact " + artifact.getFile().getName() + " to WEB-INF/lib");
+			webApplicationRedeployHook.call();
 		}
-		return archive;
+		catch (Exception e)
+		{
+			throw new MojoExecutionException("Failed to redeploy the web application.", e);
+		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Oscar Westra van Holthe - Kind
+ * Copyright 2012-2014 Oscar Westra van Holthe - Kind
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
  * compliance with the License.
@@ -15,12 +15,16 @@
  */
 package net.sf.opk.glassfish;
 
+import java.io.Serializable;
+import java.util.Arrays;
+
+
 /**
  * Simple JavaBean to represent a user.
  *
  * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
-public class User
+public class User implements Serializable
 {
 	/**
 	 * The name of the user.
@@ -69,5 +73,33 @@ public class User
 	public void setRoles(String[] roles)
 	{
 		this.roles = roles;
+	}
+
+
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+
+		User user = (User)o;
+
+		return username.equals(user.username) && password.equals(user.password) && Arrays.equals(roles, user.roles);
+	}
+
+
+	@Override
+	public int hashCode()
+	{
+		int result = username.hashCode();
+		result = 31 * result + password.hashCode();
+		result = 31 * result + Arrays.hashCode(roles);
+		return result;
 	}
 }

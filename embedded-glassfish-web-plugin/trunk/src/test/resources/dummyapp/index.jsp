@@ -1,6 +1,6 @@
 <%@page session="false" contentType="text/html;charset=UTF-8"%>
 <%--
-  ~ Copyright 2012 Oscar Westra van Holthe - Kind
+  ~ Copyright 2012-2014 Oscar Westra van Holthe - Kind
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
   ~ compliance with the License.

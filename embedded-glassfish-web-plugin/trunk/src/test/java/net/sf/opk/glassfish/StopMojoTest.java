@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Oscar Westra van Holthe - Kind
+ * Copyright 2012-2014 Oscar Westra van Holthe - Kind
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
  * compliance with the License.
@@ -15,35 +15,63 @@
  */
 package net.sf.opk.glassfish;
 
+import java.util.concurrent.Callable;
+
+import org.glassfish.embeddable.GlassFishException;
 import org.junit.Test;
 
 import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
-import static org.junit.Assert.assertNull;
-
 
 /**
  * Test class for the class {@link StopMojo}.
  *
  * @author <a href="mailto:oscar@westravanholthe.nl">Oscar Westra van Holthe - Kind</a>
  */
-public class StopMojoTest extends MojoTestBase
-{
-	@Test
-	public void testExecute() throws Exception
-	{
-		EmbeddedGlassFish mockGlassFish = createMock(EmbeddedGlassFish.class);
+public class StopMojoTest {
 
-		mockGlassFish.shutdown();
-		expectLastCall().once();
-		replay(mockGlassFish);
+    @Test
+    public void testShutdownNormal() throws Exception {
 
-		StopMojo mojo = configureBaseMojo(new StopMojo(), mockGlassFish);
-		mojo.execute();
+        // Setup
 
-		verify(mockGlassFish);
-		assertNull(mojo.createEmbeddedGlassFish());
-	}
+        Callable<Void> shutdownHook = createMock(Callable.class);
+        expect(shutdownHook.call()).andReturn(null).once();
+        replay(shutdownHook);
+
+        // Set shutdown hook from different MOJO (happens with start and stop goals too).
+        new StartMojo().setGlassFishShutdownHook(shutdownHook);
+
+        // Perform test
+
+        StopMojo mojo = new StopMojo();
+        mojo.execute();
+
+        verify(shutdownHook);
+    }
+
+    @Test
+    public void testShutdownFailure() throws Exception {
+
+        // Setup
+
+        GlassFishException oops = new GlassFishException("Oops");
+
+        Callable<Void> shutdownHook = createMock(Callable.class);
+        expect(shutdownHook.call()).andThrow(oops);
+        replay(shutdownHook);
+
+        // Set shutdown hook from different MOJO (happens with start and stop goals too).
+        new StartMojo().setGlassFishShutdownHook(shutdownHook);
+
+        // Perform test
+
+        StopMojo mojo = new StopMojo();
+        // Should still not throw!
+        mojo.execute();
+
+        verify(shutdownHook);
+    }
 }
