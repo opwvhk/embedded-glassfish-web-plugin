@@ -1,4 +1,4 @@
-package nl.opk.io;
+package net.sf.opk.glassfish.archive;
 
 import java.io.FileWriter;
 import java.io.IOException;

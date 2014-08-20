@@ -1,4 +1,4 @@
-package nl.opk.io;
+package net.sf.opk.glassfish.archive;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,7 +28,8 @@ public class RealScatteredArchive implements AutoCloseable
 	private final Path archiveRoot;
 
 
-	public RealScatteredArchive(Path tempDir, Path webResourcesPath, Set<Path> classpath) throws IOException
+	public RealScatteredArchive(Path tempDir, Path webResourcesPath, Iterable<Path> classpath)
+			throws IOException
 	{
 		Path webResourcesRoot = webResourcesPath.toAbsolutePath();
 		directoryEventSource = new DirectoryEventSource(webResourcesRoot.getFileSystem());

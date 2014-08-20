@@ -18,40 +18,59 @@ package net.sf.opk.glassfish;
 import java.lang.reflect.Field;
 import java.util.concurrent.Callable;
 
+import org.junit.After;
 import org.junit.Before;
 
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 
-public class MojoTestBase {
 
-    protected Callable<Void> glassFishWebPluginRunner;
-    protected Callable<Void> shutdownHook;
-    protected Callable<Void> redeployHook;
+public class MojoTestBase
+{
+	protected Callable<Void> glassFishWebPluginRunner;
+	protected Callable<Void> shutdownHook;
+	protected Callable<Void> redeployHook;
 
-    @Before
-    public void initialize() throws Exception {
 
-        // Should not be called.
-        shutdownHook = createMock(Callable.class);
+	@Before
+	public void initialize() throws Exception
+	{
+		// Should not be called.
+		shutdownHook = createMock(Callable.class);
 
-        redeployHook = createMock(Callable.class);
+		redeployHook = createMock(Callable.class);
 
-        GlassFishWebPluginRunner mockRunner = createMock(GlassFishWebPluginRunner.class);
-        expect(mockRunner.getShutdownHook()).andStubReturn(shutdownHook);
-        expect(mockRunner.getRedeployHook()).andStubReturn(redeployHook);
-        glassFishWebPluginRunner = mockRunner;
-    }
+		GlassFishWebPluginRunner mockRunner = createMock(GlassFishWebPluginRunner.class);
+		expect(mockRunner.getShutdownHook()).andStubReturn(shutdownHook);
+		expect(mockRunner.getRedeployHook()).andStubReturn(redeployHook);
+		glassFishWebPluginRunner = mockRunner;
+	}
 
-    protected <M extends ConfiguredEmbeddedGlassFishMojo> M configureMojo(M mojo, Callable<Void> glassFishWebPluginRunner)
-            throws Exception {
-        getField(ConfiguredEmbeddedGlassFishMojo.class, "glassFishWebPluginRunner").set(mojo, glassFishWebPluginRunner);
-        return mojo;
-    }
 
-    protected Field getField(Class type, String fieldName) throws Exception {
-        Field field = type.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        return field;
-    }
+	@After
+	public void allowGarbageCollection()
+	{
+		glassFishWebPluginRunner = null;
+		shutdownHook = null;
+		redeployHook = null;
+		System.gc();
+	}
+
+
+	protected <M extends ConfiguredEmbeddedGlassFishMojo> M configureMojo(M mojo,
+	                                                                      Callable<Void> glassFishWebPluginRunner)
+			throws Exception
+	{
+		Class<ConfiguredEmbeddedGlassFishMojo> mojoClass = ConfiguredEmbeddedGlassFishMojo.class;
+		getField(mojoClass, "glassFishWebPluginRunner").set(mojo, glassFishWebPluginRunner);
+		return mojo;
+	}
+
+
+	protected Field getField(Class type, String fieldName) throws Exception
+	{
+		Field field = type.getDeclaredField(fieldName);
+		field.setAccessible(true);
+		return field;
+	}
 }
