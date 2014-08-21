@@ -38,7 +38,6 @@ import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
-import org.glassfish.embeddable.archive.ScatteredArchive;
 import org.glassfish.security.common.SSHA;
 
 
@@ -251,23 +250,22 @@ public class EmbeddedGlassFish
 
 
 	/**
-	 * Deploy en artifact. The last deployed artifact can be undeployed with {@link #undeployArtifacts()}.
+	 * Deploy an artifact. The last deployed artifact can be undeployed with {@link #undeployArtifacts()}.
 	 *
-	 * @param artifact    the artifact to deploy
-	 * @param contextRoot the context root to use
+	 * @param artifactLocation the location of the artifact to deploy
+	 * @param contextRoot      the context root to use
 	 * @throws IOException        when the artifact is unavailable
 	 * @throws GlassFishException when deployment fails
 	 */
-	public void deployArtifact(ScatteredArchive artifact, String contextRoot) throws IOException, GlassFishException
+	public void deployArtifact(URI artifactLocation, String contextRoot) throws IOException, GlassFishException
 	{
-		URI location = artifact.toURI();
-		String application = deployer.deploy(location, "--contextroot", contextRoot, "--createtables", "true");
+		String application = deployer.deploy(artifactLocation, "--contextroot", contextRoot, "--createtables", "true");
 		deployedArtifacts.push(application);
 	}
 
 
 	/**
-	 * Undeploy the artifact that was the last one deployed with {@link #deployArtifact(ScatteredArchive, String)}.
+	 * Undeploy the artifact that was the last one deployed with {@link #deployArtifact(URI, String)}.
 	 * Calling this method again undeploys the artifact deployed before that, etc.
 	 *
 	 * @throws GlassFishException when undeployment fails
