@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -61,7 +60,9 @@ public class RealScatteredArchive implements AutoCloseable
 			directoryEventSource.register(classpathEntry, classpathSynchronizer);
 		}
 
-		new Thread(directoryEventSource).start();
+		Thread watcherThread = new Thread(directoryEventSource);
+		watcherThread.setDaemon(true);
+		watcherThread.start();
 	}
 
 

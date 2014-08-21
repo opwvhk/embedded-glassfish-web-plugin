@@ -80,10 +80,11 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 	private static final int HTTP_PORT = 8180;
 	private static final int HTTPS_PORT = 8543;
 	private static final File BASE_DIRECTORY = PathUtil.getBaseDirectory();
+	private static final File TARGET_DIRECTORY = new File(BASE_DIRECTORY, "target");
 	private static final File CLASSES_DIRECTORY = new File(BASE_DIRECTORY, "target/classes");
 	private static final File TEST_CLASSES_DIRECTORY = new File(BASE_DIRECTORY, "target/test-classes");
 	private static final File NONEXISTING_DIRECTORY = new File(BASE_DIRECTORY, "target/dfskjhdfkjfghdfghkjdf");
-	private static final File WEBAPP_DIRECTORY = PathUtil.resource("/dummyapp");
+	private static final File WEBAPP_DIRECTORY = new File(BASE_DIRECTORY, "src/test/dummyapp");
 	private static final File JAR_ARTIFACT_C = PathUtil.resource("/minimal_jar1.jar");
 	private static final File JAR_ARTIFACT_R = PathUtil.resource("/minimal_jar2.jar");
 	private static final File JAR_ARTIFACT_T = PathUtil.resource("/minimal_jar3.jar");
@@ -249,6 +250,7 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 		getField(ConfiguredEmbeddedGlassFishMojo.class, "glassFishResources").set(mojo, resources);
 		getField(ConfiguredEmbeddedGlassFishMojo.class, "contextRoot").set(mojo, contextRoot);
 		getField(ConfiguredEmbeddedGlassFishMojo.class, "webAppSourceDirectory").set(mojo, webAppSourceDirectory);
+		getField(ConfiguredEmbeddedGlassFishMojo.class, "targetDirectory").set(mojo, TARGET_DIRECTORY);
 		getField(ConfiguredEmbeddedGlassFishMojo.class, "classesDirectory").set(mojo, classesDirectory);
 		getField(ConfiguredEmbeddedGlassFishMojo.class, "useTestClasspath").setBoolean(mojo, useTestClassPath);
 		getField(ConfiguredEmbeddedGlassFishMojo.class, "testClassesDirectory").set(mojo, testClassesDirectory);
@@ -347,6 +349,17 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 
 			checkResultIsTextContaining(httpPort, APP_PATH, "Database: HSQL Database Engine");
 			checkResultIsTextContaining(httpPort, WAR_ARTIFACT_PATH, "Hello World!");
+
+			// TODO (OPWvH-K, 2014-08-21): Add code to test runtime updates.
+			// Read contents of index.jsp
+			// Write to index.jsp:
+			// <%@page session="false" contentType="text/text;charset=UTF-8"%>
+			// Hello again
+
+			// Wait a bit (1000ms)
+			checkResultIsTextContaining(httpPort, WAR_ARTIFACT_PATH, "Hello again");
+
+			// Restore index.jsp
 
 			mojo.redeploy();
 

@@ -20,8 +20,6 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javafx.util.Pair;
-
 
 /**
  * <p>A source for events on a set of directories (and their descendants) that can be handled by the {@link
@@ -227,5 +225,31 @@ public class DirectoryEventSource implements Runnable
 		}
 		runningThread = null;
 		LOGGER.log(Level.CONFIG, "Signalled {0} to stop.", toString());
+	}
+
+
+	private class Pair<K, V>
+	{
+		private final K key;
+		private final V value;
+
+
+		private Pair(K key, V value)
+		{
+			this.key = key;
+			this.value = value;
+		}
+
+
+		public K getKey()
+		{
+			return key;
+		}
+
+
+		public V getValue()
+		{
+			return value;
+		}
 	}
 }

@@ -68,16 +68,19 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 	@Parameter(defaultValue = "false")
 	private boolean useTestClasspath;
 	/**
+	 * The target directory.
+	 */
+	@Parameter(property = "project.build.directory", required = true, readonly = true)
+	private File targetDirectory;
+	/**
 	 * The directory where classes are compiled to.
 	 */
-	//@Parameter(property = "project.build.outputDirectory", defaultValue = "${project.build.outputDirectory}", required = true)
 	@Parameter(property = "project.build.outputDirectory", required = true)
 	private File classesDirectory;
 	/**
 	 * The directory where classes test are compiled to.
 	 */
 	@Parameter(property = "project.build.testOutputDirectory", required = true)
-	//@Parameter(property = "project.build.testOutputDirectory", defaultValue = "${project.build.testOutputDirectory}", required = true)
 	private File testClassesDirectory;
 	/**
 	 * The directory that contains the resources of the web application.
@@ -181,7 +184,8 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 			actualHttpsPort = httpsPort;
 		}
 		GlassFishConfiguration configuration =
-				new GlassFishConfiguration(httpPort, actualHttpsPort, contextRoot, webAppSourceDirectory);
+				new GlassFishConfiguration(httpPort, actualHttpsPort, contextRoot, webAppSourceDirectory,
+				                           targetDirectory);
 		if (classesDirectory.exists())
 		{
 			configuration.addToWebApplicationClassPath(classesDirectory);

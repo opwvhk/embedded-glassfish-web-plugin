@@ -3,12 +3,16 @@ package net.sf.opk.glassfish;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
 import org.glassfish.embeddable.GlassFishException;
-import org.glassfish.embeddable.archive.ScatteredArchive;
+
+import net.sf.opk.glassfish.archive.RealScatteredArchive;
 
 
 /**
@@ -56,24 +60,31 @@ public class GlassFishWebPluginRunner implements Callable<Void>
 
 		// Deploy the web application.
 
-		File webApplicationSourceDirectory = configuration.getWebApplicationSourceDirectory();
-		final ScatteredArchive webApplicationArchive = new ScatteredArchive("projectWebapp", ScatteredArchive.Type.WAR,
-		                                                                    webApplicationSourceDirectory);
-		for (File classpathEntry : configuration.getWebApplicationClassPath())
-		{
-			webApplicationArchive.addClassPath(classpathEntry);
-		}
-		glassFish.deployArtifact(webApplicationArchive, configuration.getContextRoot());
+		//File webApplicationSourceDirectory = configuration.getWebApplicationSourceDirectory();
+		//final ScatteredArchive webApplicationArchive = new ScatteredArchive("projectWebapp", ScatteredArchive.Type.WAR,
+		//                                                                    webApplicationSourceDirectory);
+		//for (File classpathEntry : configuration.getWebApplicationClassPath())
+		//{
+		//	webApplicationArchive.addClassPath(classpathEntry);
+		//}
+		//glassFish.deployArtifact(webApplicationArchive.toURI(), configuration.getContextRoot());
+		Path tempDir = configuration.getTempDirectory().toPath();
+		Path webResourcesPath = configuration.getWebApplicationSourceDirectory().toPath();
+		List<Path> classPath = toPaths(configuration.getWebApplicationClassPath());
+		final RealScatteredArchive webApplicationArchive =
+				new RealScatteredArchive(tempDir, webResourcesPath, classPath);
+		glassFish.deployArtifact(webApplicationArchive.toPath().toUri(), configuration.getContextRoot());
 
 		// Configure the hooks to handle GlassFish after we exit.
 		shutdownHook = new Callable<Void>()
 		{
 			@Override
-			public Void call() throws GlassFishException
+			public Void call() throws GlassFishException, IOException
 			{
 				glassFish.shutdown();
 				//LogManager.getLogManager().reset();
 				//Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader());
+				webApplicationArchive.close();
 				return null;
 			}
 		};
@@ -83,11 +94,21 @@ public class GlassFishWebPluginRunner implements Callable<Void>
 			public Void call() throws GlassFishException, IOException
 			{
 				glassFish.undeployArtifacts();
-				glassFish.deployArtifact(webApplicationArchive, configuration.getContextRoot());
+				glassFish.deployArtifact(webApplicationArchive.toPath().toUri(), configuration.getContextRoot());
 				return null;
 			}
 		};
 		return null;
+	}
+
+
+	private List<Path> toPaths(List<File> files)
+	{
+		List<Path> paths = new ArrayList<>(files.size()); for (File file : files)
+		{
+			paths.add(file.toPath());
+		}
+		return paths;
 	}
 
 

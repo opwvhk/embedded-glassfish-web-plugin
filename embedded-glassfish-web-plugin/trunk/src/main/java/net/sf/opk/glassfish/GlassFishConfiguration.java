@@ -59,6 +59,10 @@ public class GlassFishConfiguration implements Serializable
 	 */
 	private final String contextRoot;
 	/**
+	 * The temp directry in which a exploded web application can be built.
+	 */
+	private final File tempDirectory;
+	/**
 	 * The web application sources directory. Usually this is the content of {@code src/main/webapp}.
 	 */
 	private final File webApplicationSourceDirectory;
@@ -68,12 +72,14 @@ public class GlassFishConfiguration implements Serializable
 	private final List<File> webApplicationClassPath;
 
 
-	public GlassFishConfiguration(int httpPort, Integer httpsPort, String contextRoot, File webApplicationSourceDirectory)
+	public GlassFishConfiguration(int httpPort, Integer httpsPort, String contextRoot,
+	                              File webApplicationSourceDirectory, File tempDirectory)
 	{
 		this.httpPort = httpPort;
 		this.httpsPort = httpsPort;
 		this.contextRoot = contextRoot;
 		this.webApplicationSourceDirectory = webApplicationSourceDirectory;
+		this.tempDirectory = tempDirectory;
 
 		this.loggingProperties = new ArrayList<>();
 		this.glassFishResources = new ArrayList<>();
@@ -181,6 +187,12 @@ public class GlassFishConfiguration implements Serializable
 	public String getContextRoot()
 	{
 		return contextRoot;
+	}
+
+
+	public File getTempDirectory()
+	{
+		return tempDirectory;
 	}
 
 
