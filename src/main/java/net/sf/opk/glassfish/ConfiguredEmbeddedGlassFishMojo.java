@@ -68,7 +68,7 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 	@Parameter(defaultValue = "false")
 	private boolean useTestClasspath;
 	/**
-	 * The target directory.
+	 * The target directory; used to add tempoary files to.
 	 */
 	@Parameter(property = "project.build.directory", required = true, readonly = true)
 	private File targetDirectory;
@@ -184,8 +184,8 @@ public abstract class ConfiguredEmbeddedGlassFishMojo extends net.sf.opk.glassfi
 			actualHttpsPort = httpsPort;
 		}
 		GlassFishConfiguration configuration =
-				new GlassFishConfiguration(httpPort, actualHttpsPort, contextRoot, webAppSourceDirectory,
-				                           targetDirectory);
+				new GlassFishConfiguration(httpPort, actualHttpsPort, contextRoot,
+				                           webAppSourceDirectory, targetDirectory);
 		if (classesDirectory.exists())
 		{
 			configuration.addToWebApplicationClassPath(classesDirectory);
