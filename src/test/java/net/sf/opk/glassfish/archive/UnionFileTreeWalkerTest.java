@@ -40,7 +40,15 @@ public class UnionFileTreeWalkerTest extends FileBasedTestBase
 		Files.createFile(dir2a.resolve("file3"));
 		file5 = emptyPath.resolve("file5");
 		Files.createFile(testDirectory1.resolve(file5));
-		Files.createSymbolicLink(testDirectory1.resolve("link"), file5);
+		try
+		{
+			Files.createSymbolicLink(testDirectory1.resolve("link"), file5);
+		}
+		catch (IOException ignore)
+		{
+			// Ignore the exception: this happend on e.g. Windows 8, where symbolic links are
+			// disallowed by default (and the Home edition does not allow to change this).
+		}
 
 		Path dir2b = Files.createDirectory(testDirectory2.resolve("dir2"));
 
