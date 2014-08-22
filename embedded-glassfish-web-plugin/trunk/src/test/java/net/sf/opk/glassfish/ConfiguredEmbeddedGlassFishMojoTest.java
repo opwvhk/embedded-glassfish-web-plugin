@@ -82,8 +82,10 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 	private static final File BASE_DIRECTORY = PathUtil.getBaseDirectory();
 	private static final File TARGET_DIRECTORY = new File(BASE_DIRECTORY, "target");
 	private static final File CLASSES_DIRECTORY = new File(BASE_DIRECTORY, "target/classes");
-	private static final File TEST_CLASSES_DIRECTORY = new File(BASE_DIRECTORY, "target/test-classes");
-	private static final File NONEXISTING_DIRECTORY = new File(BASE_DIRECTORY, "target/dfskjhdfkjfghdfghkjdf");
+	private static final File TEST_CLASSES_DIRECTORY =
+			new File(BASE_DIRECTORY, "target/test-classes");
+	private static final File NONEXISTING_DIRECTORY =
+			new File(BASE_DIRECTORY, "target/dfskjhdfkjfghdfghkjdf");
 	private static final File WEBAPP_DIRECTORY = new File(BASE_DIRECTORY, "src/test/dummyapp");
 	private static final File JAR_ARTIFACT_C = PathUtil.resource("/minimal_jar1.jar");
 	private static final File JAR_ARTIFACT_R = PathUtil.resource("/minimal_jar2.jar");
@@ -93,9 +95,10 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 
 	private static final File LOGGING_CONFIGURATION_FILE = PathUtil.resource("/logging.properties");
 	private static final File RESOURCES_FILE = PathUtil.resource("/resources.xml");
-	private static final List<File> PLUGIN_CLASSPATH = PathUtil.findClasspath(org.glassfish.embeddable.GlassFish.class,
-	                                                                          GlassFishWebPluginRunner.class,
-	                                                                          org.hsqldb.jdbc.JDBCDataSource.class);
+	private static final List<File> PLUGIN_CLASSPATH =
+			PathUtil.findClasspath(org.glassfish.embeddable.GlassFish.class,
+					GlassFishWebPluginRunner.class, org.hsqldb.jdbc.JDBCDataSource.class);
+
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
@@ -106,21 +109,20 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 		expectedException.expect(MojoExecutionException.class);
 		expectedException.expectCause(isA(ClassNotFoundException.class));
 
-		getConfigurationFromMojo(HTTP_PORT, HTTPS_PORT, LOGGING_CONFIGURATION_FILE, RESOURCES_FILE, APP_PATH,
-		                         WEBAPP_DIRECTORY, NONEXISTING_DIRECTORY, true, NONEXISTING_DIRECTORY,
-		                         Collections.<File>emptyList(), Collections.<FileRealm>emptyList(),
-		                         Collections.<Command>emptyList());
+		getConfigurationFromMojo(HTTP_PORT, HTTPS_PORT, LOGGING_CONFIGURATION_FILE, RESOURCES_FILE,
+				APP_PATH, WEBAPP_DIRECTORY, NONEXISTING_DIRECTORY, true, NONEXISTING_DIRECTORY,
+				Collections.<File>emptyList(), Collections.<FileRealm>emptyList(),
+				Collections.<Command>emptyList());
 	}
 
 
 	@Test
 	public void testConfigurationMinimal() throws Exception
 	{
-		GlassFishConfiguration configuration = getConfigurationFromMojo(HTTP_PORT, 0, null, null, APP_PATH,
-		                                                                WEBAPP_DIRECTORY, NONEXISTING_DIRECTORY, true,
-		                                                                NONEXISTING_DIRECTORY, PLUGIN_CLASSPATH,
-		                                                                Collections.<FileRealm>emptyList(),
-		                                                                Collections.<Command>emptyList());
+		GlassFishConfiguration configuration =
+				getConfigurationFromMojo(HTTP_PORT, 0, null, null, APP_PATH, WEBAPP_DIRECTORY,
+						NONEXISTING_DIRECTORY, true, NONEXISTING_DIRECTORY, PLUGIN_CLASSPATH,
+						Collections.<FileRealm>emptyList(), Collections.<Command>emptyList());
 
 		assertEquals(HTTP_PORT, configuration.getHttpPort());
 		assertNull(configuration.getHttpsPort());
@@ -130,7 +132,8 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 		assertEquals(WEBAPP_DIRECTORY, configuration.getWebApplicationSourceDirectory());
 		List<File> webappClasspath = Arrays.asList(JAR_ARTIFACT_C, JAR_ARTIFACT_R, JAR_ARTIFACT_T);
 		assertEquals(webappClasspath, configuration.getWebApplicationClassPath());
-		assertEquals(Collections.singletonList(WAR_ARTIFACT_R), configuration.getExtraApplications());
+		assertEquals(Collections.singletonList(WAR_ARTIFACT_R),
+				configuration.getExtraApplications());
 		assertEquals(Collections.<FileRealm>emptyList(), configuration.getFileRealms());
 		assertEquals(Collections.<Command>emptyList(), configuration.getExtraCommands());
 	}
@@ -139,22 +142,25 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 	@Test
 	public void testConfigurationBasic() throws Exception
 	{
-		GlassFishConfiguration configuration = getConfigurationFromMojo(HTTP_PORT, HTTPS_PORT,
-		                                                                LOGGING_CONFIGURATION_FILE, RESOURCES_FILE,
-		                                                                APP_PATH, WEBAPP_DIRECTORY, CLASSES_DIRECTORY,
-		                                                                false, NONEXISTING_DIRECTORY, PLUGIN_CLASSPATH,
-		                                                                Collections.<FileRealm>emptyList(),
-		                                                                Collections.<Command>emptyList());
+		GlassFishConfiguration configuration =
+				getConfigurationFromMojo(HTTP_PORT, HTTPS_PORT, LOGGING_CONFIGURATION_FILE,
+						RESOURCES_FILE, APP_PATH, WEBAPP_DIRECTORY, CLASSES_DIRECTORY, false,
+						NONEXISTING_DIRECTORY, PLUGIN_CLASSPATH, Collections.<FileRealm>emptyList(),
+						Collections.<Command>emptyList());
 
 		assertEquals(HTTP_PORT, configuration.getHttpPort());
 		assertEquals((Integer)HTTPS_PORT, configuration.getHttpsPort());
-		assertEquals(Collections.singletonList(LOGGING_CONFIGURATION_FILE), configuration.getLoggingProperties());
-		assertEquals(Collections.singletonList(RESOURCES_FILE), configuration.getGlassFishResources());
+		assertEquals(Collections.singletonList(LOGGING_CONFIGURATION_FILE),
+				configuration.getLoggingProperties());
+		assertEquals(Collections.singletonList(RESOURCES_FILE),
+				configuration.getGlassFishResources());
 		assertEquals(APP_PATH, configuration.getContextRoot());
 		assertEquals(WEBAPP_DIRECTORY, configuration.getWebApplicationSourceDirectory());
-		List<File> webappClasspath = Arrays.asList(CLASSES_DIRECTORY, JAR_ARTIFACT_C, JAR_ARTIFACT_R);
+		List<File> webappClasspath =
+				Arrays.asList(CLASSES_DIRECTORY, JAR_ARTIFACT_C, JAR_ARTIFACT_R);
 		assertEquals(webappClasspath, configuration.getWebApplicationClassPath());
-		assertEquals(Collections.singletonList(WAR_ARTIFACT_R), configuration.getExtraApplications());
+		assertEquals(Collections.singletonList(WAR_ARTIFACT_R),
+				configuration.getExtraApplications());
 		assertEquals(Collections.<FileRealm>emptyList(), configuration.getFileRealms());
 		assertEquals(Collections.<Command>emptyList(), configuration.getExtraCommands());
 	}
@@ -166,56 +172,68 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 		List<FileRealm> fileRealms = createFileRealms();
 		List<Command> extraCommands = createCommands();
 
-		GlassFishConfiguration configuration = getConfigurationFromMojo(HTTP_PORT, HTTPS_PORT,
-		                                                                LOGGING_CONFIGURATION_FILE, RESOURCES_FILE,
-		                                                                APP_PATH, WEBAPP_DIRECTORY, CLASSES_DIRECTORY,
-		                                                                true, TEST_CLASSES_DIRECTORY, PLUGIN_CLASSPATH,
-		                                                                fileRealms, extraCommands);
+		GlassFishConfiguration configuration =
+				getConfigurationFromMojo(HTTP_PORT, HTTPS_PORT, LOGGING_CONFIGURATION_FILE,
+						RESOURCES_FILE, APP_PATH, WEBAPP_DIRECTORY, CLASSES_DIRECTORY, true,
+						TEST_CLASSES_DIRECTORY, PLUGIN_CLASSPATH, fileRealms, extraCommands);
 
 		assertEquals(HTTP_PORT, configuration.getHttpPort());
 		assertEquals((Integer)HTTPS_PORT, configuration.getHttpsPort());
-		assertEquals(Collections.singletonList(LOGGING_CONFIGURATION_FILE), configuration.getLoggingProperties());
-		assertEquals(Collections.singletonList(RESOURCES_FILE), configuration.getGlassFishResources());
+		assertEquals(Collections.singletonList(LOGGING_CONFIGURATION_FILE),
+				configuration.getLoggingProperties());
+		assertEquals(Collections.singletonList(RESOURCES_FILE),
+				configuration.getGlassFishResources());
 		assertEquals(APP_PATH, configuration.getContextRoot());
 		assertEquals(WEBAPP_DIRECTORY, configuration.getWebApplicationSourceDirectory());
-		List<File> webappClasspath = Arrays.asList(CLASSES_DIRECTORY, TEST_CLASSES_DIRECTORY, JAR_ARTIFACT_C,
-		                                           JAR_ARTIFACT_R, JAR_ARTIFACT_T);
+		List<File> webappClasspath =
+				Arrays.asList(CLASSES_DIRECTORY, TEST_CLASSES_DIRECTORY, JAR_ARTIFACT_C,
+						JAR_ARTIFACT_R, JAR_ARTIFACT_T);
 		assertEquals(webappClasspath, configuration.getWebApplicationClassPath());
-		assertEquals(Collections.singletonList(WAR_ARTIFACT_R), configuration.getExtraApplications());
+		assertEquals(Collections.singletonList(WAR_ARTIFACT_R),
+				configuration.getExtraApplications());
 		assertEquals(fileRealms, configuration.getFileRealms());
 		assertEquals(extraCommands, configuration.getExtraCommands());
 	}
 
 
-	private GlassFishConfiguration getConfigurationFromMojo(int httpPort, int httpsPort, File loggingConfiguration,
+	private GlassFishConfiguration getConfigurationFromMojo(int httpPort, int httpsPort,
+	                                                        File loggingConfiguration,
 	                                                        File resources, String contextRoot,
-	                                                        File webAppSourceDirectory, File classesDirectory,
-	                                                        boolean useTestClassPath, File testClassesDirectory,
-	                                                        List<File> pluginClasspath, List<FileRealm> fileRealms,
-	                                                        List<Command> extraCommands) throws Exception
+	                                                        File webAppSourceDirectory,
+	                                                        File classesDirectory,
+	                                                        boolean useTestClassPath,
+	                                                        File testClassesDirectory,
+	                                                        List<File> pluginClasspath,
+	                                                        List<FileRealm> fileRealms,
+	                                                        List<Command> extraCommands)
+			throws Exception
 	{
-		ConfiguredEmbeddedGlassFishMojo mojo = createAndconfigureMojo(httpPort, httpsPort, loggingConfiguration,
-		                                                              resources, contextRoot, webAppSourceDirectory,
-		                                                              classesDirectory, useTestClassPath,
-		                                                              testClassesDirectory, pluginClasspath, fileRealms,
-		                                                              extraCommands);
+		ConfiguredEmbeddedGlassFishMojo mojo =
+				createAndconfigureMojo(httpPort, httpsPort, loggingConfiguration, resources,
+						contextRoot, webAppSourceDirectory, classesDirectory, useTestClassPath,
+						testClassesDirectory, pluginClasspath, fileRealms, extraCommands);
 
 		Callable<Void> glassFishWebPluginRunner = mojo.getGlassFishWebPluginRunner();
-		Object configuration = ConfiguredEmbeddedGlassFishMojo.callAccessor(glassFishWebPluginRunner,
-		                                                                    "getConfiguration");
+		Object configuration =
+				ConfiguredEmbeddedGlassFishMojo.callAccessor(glassFishWebPluginRunner,
+						"getConfiguration");
 		byte[] rawData = ConfiguredEmbeddedGlassFishMojo.callAccessor(configuration, "toByteArray");
 		return GlassFishConfiguration.fromByteArray(rawData);
 	}
 
 
 	private ConfiguredEmbeddedGlassFishMojo createAndconfigureMojo(int httpPort, int httpsPort,
-	                                                               File loggingConfiguration, File resources,
-	                                                               String contextRoot, File webAppSourceDirectory,
-	                                                               File classesDirectory, boolean useTestClassPath,
+	                                                               File loggingConfiguration,
+	                                                               File resources,
+	                                                               String contextRoot,
+	                                                               File webAppSourceDirectory,
+	                                                               File classesDirectory,
+	                                                               boolean useTestClassPath,
 	                                                               File testClassesDirectory,
 	                                                               List<File> pluginClasspath,
 	                                                               List<FileRealm> fileRealms,
-	                                                               List<Command> extraCommands) throws Exception
+	                                                               List<Command> extraCommands)
+			throws Exception
 	{
 		ConfiguredEmbeddedGlassFishMojo mojo = new ConfiguredEmbeddedGlassFishMojo()
 		{
@@ -246,17 +264,24 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 		getField(ConfiguredEmbeddedGlassFishMojo.class, "plugin").set(mojo, plugin);
 		getField(ConfiguredEmbeddedGlassFishMojo.class, "httpPort").setInt(mojo, httpPort);
 		getField(ConfiguredEmbeddedGlassFishMojo.class, "httpsPort").setInt(mojo, httpsPort);
-		getField(ConfiguredEmbeddedGlassFishMojo.class, "loggingProperties").set(mojo, loggingConfiguration);
+		getField(ConfiguredEmbeddedGlassFishMojo.class, "loggingProperties").set(mojo,
+				loggingConfiguration);
 		getField(ConfiguredEmbeddedGlassFishMojo.class, "glassFishResources").set(mojo, resources);
 		getField(ConfiguredEmbeddedGlassFishMojo.class, "contextRoot").set(mojo, contextRoot);
-		getField(ConfiguredEmbeddedGlassFishMojo.class, "webAppSourceDirectory").set(mojo, webAppSourceDirectory);
-		getField(ConfiguredEmbeddedGlassFishMojo.class, "targetDirectory").set(mojo, TARGET_DIRECTORY);
-		getField(ConfiguredEmbeddedGlassFishMojo.class, "classesDirectory").set(mojo, classesDirectory);
-		getField(ConfiguredEmbeddedGlassFishMojo.class, "useTestClasspath").setBoolean(mojo, useTestClassPath);
-		getField(ConfiguredEmbeddedGlassFishMojo.class, "testClassesDirectory").set(mojo, testClassesDirectory);
-		getField(ConfiguredEmbeddedGlassFishMojo.class, "fileRealms").set(mojo, toArray(FileRealm.class, fileRealms));
-		getField(ConfiguredEmbeddedGlassFishMojo.class, "extraCommands").set(mojo, toArray(Command.class,
-		                                                                                   extraCommands));
+		getField(ConfiguredEmbeddedGlassFishMojo.class, "webAppSourceDirectory").set(mojo,
+				webAppSourceDirectory);
+		getField(ConfiguredEmbeddedGlassFishMojo.class, "targetDirectory").set(mojo,
+				TARGET_DIRECTORY);
+		getField(ConfiguredEmbeddedGlassFishMojo.class, "classesDirectory").set(mojo,
+				classesDirectory);
+		getField(ConfiguredEmbeddedGlassFishMojo.class, "useTestClasspath").setBoolean(mojo,
+				useTestClassPath);
+		getField(ConfiguredEmbeddedGlassFishMojo.class, "testClassesDirectory").set(mojo,
+				testClassesDirectory);
+		getField(ConfiguredEmbeddedGlassFishMojo.class, "fileRealms").set(mojo,
+				toArray(FileRealm.class, fileRealms));
+		getField(ConfiguredEmbeddedGlassFishMojo.class, "extraCommands").set(mojo,
+				toArray(Command.class, extraCommands));
 		return mojo;
 	}
 
@@ -335,11 +360,11 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 		int httpPort = findUnusedPort();
 		int httpsPort = findUnusedPort();
 
-		ConfiguredEmbeddedGlassFishMojo mojo = createAndconfigureMojo(httpPort, httpsPort, LOGGING_CONFIGURATION_FILE,
-		                                                              RESOURCES_FILE, APP_PATH, WEBAPP_DIRECTORY,
-		                                                              CLASSES_DIRECTORY, true, TEST_CLASSES_DIRECTORY,
-		                                                              PLUGIN_CLASSPATH, createFileRealms(),
-		                                                              createCommands());
+		ConfiguredEmbeddedGlassFishMojo mojo =
+				createAndconfigureMojo(httpPort, httpsPort, LOGGING_CONFIGURATION_FILE,
+						RESOURCES_FILE, APP_PATH, WEBAPP_DIRECTORY, CLASSES_DIRECTORY, true,
+						TEST_CLASSES_DIRECTORY, PLUGIN_CLASSPATH, createFileRealms(),
+						createCommands());
 
 		try
 		{
@@ -349,17 +374,6 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 
 			checkResultIsTextContaining(httpPort, APP_PATH, "Database: HSQL Database Engine");
 			checkResultIsTextContaining(httpPort, WAR_ARTIFACT_PATH, "Hello World!");
-
-			// TODO (OPWvH-K, 2014-08-21): Add code to test runtime updates.
-			// Read contents of index.jsp
-			// Write to index.jsp:
-			// <%@page session="false" contentType="text/text;charset=UTF-8"%>
-			// Hello again
-
-			// Wait a bit (1000ms)
-			checkResultIsTextContaining(httpPort, WAR_ARTIFACT_PATH, "Hello again");
-
-			// Restore index.jsp
 
 			mojo.redeploy();
 
@@ -416,7 +430,7 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 			HttpGet httpget = new HttpGet(uri);
 			HttpResponse response = httpClient.execute(httpget);
 			assertEquals(location + " is not available, but should be.", HttpServletResponse.SC_OK,
-			             response.getStatusLine().getStatusCode());
+					response.getStatusLine().getStatusCode());
 			assertNotNull(response.getEntity().getContent());
 			String content = EntityUtils.toString(response.getEntity());
 			assertThat(content, StringContains.containsString(text));
@@ -436,11 +450,10 @@ public class ConfiguredEmbeddedGlassFishMojoTest extends MojoTestBase
 
 		int httpPort = findUnusedPort();
 
-		ConfiguredEmbeddedGlassFishMojo mojo = createAndconfigureMojo(httpPort, 0, LOGGING_CONFIGURATION_FILE,
-		                                                              RESOURCES_FILE, APP_PATH, WEBAPP_DIRECTORY,
-		                                                              CLASSES_DIRECTORY, true, TEST_CLASSES_DIRECTORY,
-		                                                              PLUGIN_CLASSPATH, createFileRealms(),
-		                                                              createCommands());
+		ConfiguredEmbeddedGlassFishMojo mojo =
+				createAndconfigureMojo(httpPort, 0, LOGGING_CONFIGURATION_FILE, RESOURCES_FILE,
+						APP_PATH, WEBAPP_DIRECTORY, CLASSES_DIRECTORY, true, TEST_CLASSES_DIRECTORY,
+						PLUGIN_CLASSPATH, createFileRealms(), createCommands());
 
 		try
 		{
