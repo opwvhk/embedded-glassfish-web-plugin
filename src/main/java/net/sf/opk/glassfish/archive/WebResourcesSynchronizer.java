@@ -255,6 +255,9 @@ public class WebResourcesSynchronizer implements DirectoryEventHandler
 			return;
 		}
 
-		Files.walkFileTree(visitedPath, visitor);
+		if (Files.exists(visitedPath))
+		{
+			Files.walkFileTree(visitedPath, visitor);
+		}
 	}
 }

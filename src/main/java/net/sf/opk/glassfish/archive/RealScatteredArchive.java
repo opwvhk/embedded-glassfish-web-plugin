@@ -37,8 +37,8 @@ public class RealScatteredArchive implements AutoCloseable
 		WebResourcesSynchronizer webResources = new WebResourcesSynchronizer(webResourcesRoot, archiveRoot);
 		directoryEventSource.register(webResourcesPath, webResources);
 
-		final Path archiveClasses = Files.createDirectory(archiveRoot.resolve(WEBINF).resolve(CLASSES));
-		final Path archiveLib = Files.createDirectory(archiveClasses.resolveSibling(LIB));
+		final Path archiveClasses = Files.createDirectories(archiveRoot.resolve(WEBINF).resolve(CLASSES));
+		final Path archiveLib = Files.createDirectories(archiveClasses.resolveSibling(LIB));
 
 		List<Path> classpathEntries = new ArrayList<>();
 		for (final Path classpathEntry : classpath)
