@@ -3,7 +3,7 @@
 	---
 	Oscar Westra van Holthe - Kind
 	---
-	2014-04-12
+	2014-08-27
 	---
 
 Embedded GlassFish Web Plugin: Introduction
@@ -13,6 +13,9 @@ Embedded GlassFish Web Plugin: Introduction
   {{{http://embedded-glassfish.java.net/}embedded GlassFish}} server providing the
   {{{http://www.oracle.com/technetwork/java/javaee/overview/index.html}JavaEE 7 Web Profile}}. You can also let it
   provide the full JavaEE 7 API (or JavaEE 6) by tweaking the plugin dependencies.
+
+  Starting version 2.1, changes in your web resources are picked up and become visible in the deployed artifact without
+  requiring a restart.
 
 
 * Goals overview

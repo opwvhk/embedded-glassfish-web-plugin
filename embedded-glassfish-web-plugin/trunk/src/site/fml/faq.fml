@@ -37,5 +37,20 @@
 				</p>
 			</answer>
 		</faq>
+		<faq id="live-editing">
+			<question>Will changes to web resources be immediately visible?</question>
+			<answer>
+				<p>
+					Yes. This is one of the killer features when running a web application in an embedded Jetty or
+					Tomcat container. JavaEE containers generally do not support this.
+				</p>
+				<p>
+					The Embedded GlassFish Web Plugin plugin is different in that is synchronizes any changes to web
+					resourcres and classes. Your changes to web resources will be immediately visible, and when you use
+					a solution like JRebel, so will changes to your classes. Only changes to libraries still require a
+					restart.
+				</p>
+			</answer>
+		</faq>
 	</part>
 </faqs>
