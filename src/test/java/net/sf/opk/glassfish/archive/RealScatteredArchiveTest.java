@@ -92,10 +92,10 @@ public class RealScatteredArchiveTest extends FileBasedTestBase
 
 			// Update sources
 
-			pause(500);
+			pause(5000);
 			Files.createFile(webappPathExtra);
 			Files.createFile(classesPathExtra);
-			pause(500);
+			pause(5000);
 
 			// Verify changes in result
 

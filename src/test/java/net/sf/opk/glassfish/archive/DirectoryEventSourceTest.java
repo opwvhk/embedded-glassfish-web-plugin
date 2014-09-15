@@ -22,7 +22,6 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -207,6 +206,7 @@ public class DirectoryEventSourceTest extends FileBasedTestBase
 			public WatchEvent.Kind<?>[] handledEvents()
 			{
 				return new WatchEvent.Kind<?>[]{StandardWatchEventKinds.ENTRY_CREATE,
+				                                StandardWatchEventKinds.ENTRY_MODIFY,
 				                                StandardWatchEventKinds.ENTRY_DELETE};
 			}
 
@@ -256,16 +256,13 @@ public class DirectoryEventSourceTest extends FileBasedTestBase
 		pause();
 		assertFalse(watchThread.isAlive());
 
-		Map.Entry<? extends WatchEvent.Kind<?>, Path> entry1 =
-				new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_CREATE, childDir);
-		Map.Entry<? extends WatchEvent.Kind<?>, Path> entry2 =
-				new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_CREATE, testFile);
-		// There is no modify: our handler didn't ask for that event.
-		Map.Entry<? extends WatchEvent.Kind<?>, Path> entry3 =
-				new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_DELETE, testFile);
-		Map.Entry<? extends WatchEvent.Kind<?>, Path> entry4 =
-				new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_DELETE, childDir);
-		List<Map.Entry<? extends WatchEvent.Kind<?>, Path>> expected = Arrays.asList(entry1, entry2, entry3, entry4);
+        List<Map.Entry<? extends WatchEvent.Kind<?>, Path>> expected = new ArrayList<>();
+		expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, subDirectory));
+		expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_CREATE, childDir));
+        //expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_CREATE, testFile));
+        expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_DELETE, testFile));
+        expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, subDirectory));
+        expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_DELETE, childDir));
 		assertEquals(expected, handledEvents);
 	}
 
@@ -280,6 +277,7 @@ public class DirectoryEventSourceTest extends FileBasedTestBase
 			public WatchEvent.Kind<?>[] handledEvents()
 			{
 				return new WatchEvent.Kind<?>[]{StandardWatchEventKinds.ENTRY_CREATE,
+				                                StandardWatchEventKinds.ENTRY_MODIFY,
 				                                StandardWatchEventKinds.ENTRY_DELETE};
 			}
 
@@ -369,6 +367,6 @@ public class DirectoryEventSourceTest extends FileBasedTestBase
 
 	private static void pause() throws InterruptedException
 	{
-		Thread.sleep(500);
+		Thread.sleep(5000);
 	}
 }

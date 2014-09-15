@@ -223,7 +223,7 @@ public class WebResourcesSynchronizer implements DirectoryEventHandler
 	@Override
 	public WatchEvent.Kind<?>[] handledEvents()
 	{
-		return new WatchEvent.Kind<?>[]{StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE};
+		return new WatchEvent.Kind<?>[]{StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE};
 	}
 
 

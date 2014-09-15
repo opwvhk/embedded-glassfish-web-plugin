@@ -185,12 +185,12 @@ public class ClasspathEntriesSynchronizerTest extends FileBasedTestBase
 
 
 	@Test
-	public void handlesCreateAndDeleteEvents() throws IOException
+	public void handlesAllFileEvents() throws IOException
 	{
 		ClasspathEntriesSynchronizer synchronizer = new ClasspathEntriesSynchronizer(src, dest);
 
 		assertArrayEquals(
-				new WatchEvent.Kind<?>[]{StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE},
+				new WatchEvent.Kind<?>[]{StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE},
 				synchronizer.handledEvents());
 	}
 
