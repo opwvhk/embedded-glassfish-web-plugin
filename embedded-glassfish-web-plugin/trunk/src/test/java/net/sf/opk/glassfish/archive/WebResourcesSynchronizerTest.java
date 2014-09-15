@@ -134,12 +134,12 @@ public class WebResourcesSynchronizerTest extends FileBasedTestBase
 
 
 	@Test
-	public void handlesCreateAndDeleteEvents() throws IOException
+	public void handlesAllFileEvents() throws IOException
 	{
 		WebResourcesSynchronizer synchronizer = new WebResourcesSynchronizer(src, dest);
 
 		assertArrayEquals(
-				new WatchEvent.Kind<?>[]{StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE},
+				new WatchEvent.Kind<?>[]{StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE},
 				synchronizer.handledEvents());
 	}
 
