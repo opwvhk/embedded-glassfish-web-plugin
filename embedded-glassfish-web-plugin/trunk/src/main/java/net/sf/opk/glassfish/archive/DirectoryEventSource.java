@@ -1,5 +1,7 @@
 package net.sf.opk.glassfish.archive;
 
+import com.sun.nio.file.SensitivityWatchEventModifier;
+
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -108,7 +110,7 @@ public class DirectoryEventSource implements Runnable
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException
 			{
-				WatchKey key = dir.register(watchService, events);
+				WatchKey key = dir.register(watchService, events, SensitivityWatchEventModifier.HIGH);
 				watchedRoots.put(key, root);
 				return FileVisitResult.CONTINUE;
 			}
