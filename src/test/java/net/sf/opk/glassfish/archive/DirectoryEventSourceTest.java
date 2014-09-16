@@ -259,8 +259,11 @@ public class DirectoryEventSourceTest extends FileBasedTestBase
         List<Map.Entry<? extends WatchEvent.Kind<?>, Path>> expected = new ArrayList<>();
 		expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, subDirectory));
 		expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_CREATE, childDir));
-        //expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_CREATE, testFile));
+		expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, childDir));
+        expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_CREATE, testFile));
+        expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, testFile));
         expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_DELETE, testFile));
+        expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, childDir));
         expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, subDirectory));
         expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_DELETE, childDir));
 		assertEquals(expected, handledEvents);
@@ -367,6 +370,6 @@ public class DirectoryEventSourceTest extends FileBasedTestBase
 
 	private static void pause() throws InterruptedException
 	{
-		Thread.sleep(5000);
+		Thread.sleep(2000);
 	}
 }
