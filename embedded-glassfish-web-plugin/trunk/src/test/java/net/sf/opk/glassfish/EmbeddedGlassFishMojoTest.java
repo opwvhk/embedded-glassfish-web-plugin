@@ -23,10 +23,10 @@ import org.glassfish.embeddable.GlassFishException;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expectLastCall;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 /**
@@ -62,7 +62,7 @@ public class EmbeddedGlassFishMojoTest
 	@Test
 	public void testShutdownThrowing() throws Exception
 	{
-        Callable<Void> shutdownHook = createMock(Callable.class);
+        Callable<Void> shutdownHook = mock(Callable.class);
 
         // Set shutdown hook from different MOJO (happens with start and stop goals too).
         new EmbeddedGlassFishMojo() {
@@ -72,21 +72,19 @@ public class EmbeddedGlassFishMojoTest
             }
         }.setGlassFishShutdownHook(shutdownHook);
 
-        shutdownHook.call();
-		expectLastCall().andThrow(new GlassFishException("Test")).once();
-		replay(shutdownHook);
+        when(shutdownHook.call()).thenThrow(new GlassFishException("Test"));
 
         // Should not throw.
         mojo.shutdown();
 
-		verify(shutdownHook);
+		verify(shutdownHook, times(1)).call();
 	}
 
 
 	@Test
 	public void testShutdownNormal() throws Exception
 	{
-        Callable<Void> shutdownHook = createMock(Callable.class);
+        Callable<Void> shutdownHook = mock(Callable.class);
 
         // Set shutdown hook from different MOJO (happens with start and stop goals too).
         new EmbeddedGlassFishMojo() {
@@ -96,15 +94,13 @@ public class EmbeddedGlassFishMojoTest
             }
         }.setGlassFishShutdownHook(shutdownHook);
 
-        shutdownHook.call();
-		expectLastCall().andReturn(null).once();
-		replay(shutdownHook);
+		when(shutdownHook.call()).thenReturn(null);
 
         // Should not throw.
         mojo.shutdown();
         // Second call should not do anything.
         mojo.shutdown();
 
-		verify(shutdownHook);
+		verify(shutdownHook, times(1)).call();
 	}
 }

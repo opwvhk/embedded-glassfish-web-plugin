@@ -20,10 +20,11 @@ import java.util.concurrent.Callable;
 import org.glassfish.embeddable.GlassFishException;
 import org.junit.Test;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 
 /**
  * Test class for the class {@link StopMojo}.
@@ -37,9 +38,8 @@ public class StopMojoTest {
 
         // Setup
 
-        Callable<Void> shutdownHook = createMock(Callable.class);
-        expect(shutdownHook.call()).andReturn(null).once();
-        replay(shutdownHook);
+        Callable<Void> shutdownHook = mock(Callable.class);
+        when(shutdownHook.call()).thenReturn(null);
 
         // Set shutdown hook from different MOJO (happens with start and stop goals too).
         new StartMojo().setGlassFishShutdownHook(shutdownHook);
@@ -49,7 +49,7 @@ public class StopMojoTest {
         StopMojo mojo = new StopMojo();
         mojo.execute();
 
-        verify(shutdownHook);
+        verify(shutdownHook, times(1)).call();
     }
 
     @Test
@@ -59,9 +59,8 @@ public class StopMojoTest {
 
         GlassFishException oops = new GlassFishException("Oops");
 
-        Callable<Void> shutdownHook = createMock(Callable.class);
-        expect(shutdownHook.call()).andThrow(oops);
-        replay(shutdownHook);
+        Callable<Void> shutdownHook = mock(Callable.class);
+        when(shutdownHook.call()).thenThrow(oops);
 
         // Set shutdown hook from different MOJO (happens with start and stop goals too).
         new StartMojo().setGlassFishShutdownHook(shutdownHook);
@@ -72,6 +71,6 @@ public class StopMojoTest {
         // Should still not throw!
         mojo.execute();
 
-        verify(shutdownHook);
+        verify(shutdownHook, times(1)).call();
     }
 }

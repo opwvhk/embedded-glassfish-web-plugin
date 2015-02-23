@@ -22,11 +22,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 
 /**
  * Test class for the class {@link StartMojo}.
@@ -39,8 +40,7 @@ public class StartMojoTest extends MojoTestBase {
 
     @Test
     public void testStartupNormal() throws Exception {
-        expect(glassFishWebPluginRunner.call()).andReturn(null);
-        replay(glassFishWebPluginRunner, redeployHook, shutdownHook);
+        when(glassFishWebPluginRunner.call()).thenReturn(null);
 
         StartMojo mojo = configureMojo(new StartMojo(), glassFishWebPluginRunner);
         mojo.execute();
@@ -48,14 +48,13 @@ public class StartMojoTest extends MojoTestBase {
         assertSame(redeployHook, getField(ConfiguredEmbeddedGlassFishMojo.class, "webApplicationRedeployHook").get(mojo));
         assertSame(shutdownHook, getField(EmbeddedGlassFishMojo.class, "glassFishShutdownHook").get(null));
 
-        verify(glassFishWebPluginRunner, redeployHook, shutdownHook);
+        verify(glassFishWebPluginRunner, times(1)).call();
     }
 
     @Test
     public void testStartupFailure() throws Exception {
         GlassFishException oops = new GlassFishException("Oops");
-        expect(glassFishWebPluginRunner.call()).andThrow(oops);
-        replay(glassFishWebPluginRunner, redeployHook, shutdownHook);
+        when(glassFishWebPluginRunner.call()).thenThrow(oops);
 
         expectedException.expect(MojoExecutionException.class);
         expectedException.expectCause(Is.is(oops));
@@ -66,6 +65,6 @@ public class StartMojoTest extends MojoTestBase {
         assertNull(ConfiguredEmbeddedGlassFishMojo.class.getDeclaredField("webApplicationRedeployHook").get(mojo));
         assertNull(EmbeddedGlassFishMojo.class.getDeclaredField("glassFishShutdownHook").get(null));
 
-        verify(glassFishWebPluginRunner, redeployHook, shutdownHook);
+	    verify(glassFishWebPluginRunner, times(1)).call();
     }
 }

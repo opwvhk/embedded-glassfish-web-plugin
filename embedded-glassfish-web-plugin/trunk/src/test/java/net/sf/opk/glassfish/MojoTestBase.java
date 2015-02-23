@@ -21,8 +21,8 @@ import java.util.concurrent.Callable;
 import org.junit.After;
 import org.junit.Before;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 public class MojoTestBase
@@ -36,13 +36,13 @@ public class MojoTestBase
 	public void initialize() throws Exception
 	{
 		// Should not be called.
-		shutdownHook = createMock(Callable.class);
+		shutdownHook = mock(Callable.class);
 
-		redeployHook = createMock(Callable.class);
+		redeployHook = mock(Callable.class);
 
-		GlassFishWebPluginRunner mockRunner = createMock(GlassFishWebPluginRunner.class);
-		expect(mockRunner.getShutdownHook()).andStubReturn(shutdownHook);
-		expect(mockRunner.getRedeployHook()).andStubReturn(redeployHook);
+		GlassFishWebPluginRunner mockRunner = mock(GlassFishWebPluginRunner.class);
+		when(mockRunner.getShutdownHook()).thenReturn(shutdownHook);
+		when(mockRunner.getRedeployHook()).thenReturn(redeployHook);
 		glassFishWebPluginRunner = mockRunner;
 	}
 
