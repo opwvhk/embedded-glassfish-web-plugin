@@ -25,18 +25,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
-import org.easymock.IAnswer;
 import org.glassfish.embeddable.GlassFishException;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
-import static org.easymock.EasyMock.anyInt;
-import static org.easymock.EasyMock.anyObject;
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 
 /**
  * Test class for {@link RunMojo}.
@@ -63,29 +65,30 @@ public class RunMojoTest extends MojoTestBase {
 
             // Create mock.
 
-            expect(glassFishWebPluginRunner.call()).andAnswer(new IAnswer<Void>() {
-                @Override
-                public Void answer() throws Throwable {
-                    System.out.println("Startup");
-                    return null;
-                }
+            when(glassFishWebPluginRunner.call()).thenAnswer(new Answer<Void>() {
+	            @Override
+	            public Void answer(InvocationOnMock invocation) throws Throwable
+	            {
+		            System.out.println("Startup");
+		            return null;
+	            }
             });
-            expect(redeployHook.call()).andAnswer(new IAnswer<Void>() {
+            when(redeployHook.call()).thenAnswer(new Answer<Void>() {
                 @Override
-                public Void answer() throws Throwable {
+                public Void answer(InvocationOnMock invocation) throws Throwable {
                     System.out.println("Redeployed");
                     return null;
                 }
             });
-            expect(shutdownHook.call()).andAnswer(new IAnswer<Void>() {
-                @Override
-                public Void answer() throws Throwable {
-                    System.out.println("Shutdown");
-                    return null;
-                }
+            when(shutdownHook.call()).thenAnswer(new Answer<Void>()
+            {
+	            @Override
+	            public Void answer(InvocationOnMock invocation) throws Throwable
+	            {
+		            System.out.println("Shutdown");
+		            return null;
+	            }
             });
-
-            replay(glassFishWebPluginRunner, redeployHook, shutdownHook);
 
             // Create and test mojo.
 
@@ -107,7 +110,9 @@ public class RunMojoTest extends MojoTestBase {
 
             testedProcess.join();
 
-            verify(glassFishWebPluginRunner, redeployHook, shutdownHook);
+            verify(glassFishWebPluginRunner, times(1)).call();
+            verify(redeployHook, times(1)).call();
+            verify(shutdownHook, times(1)).call();
             assertTrue(thrown.isEmpty());
             assertEquals("Startup\n" +
                     "Press ENTER to redeploy the artifact, or 'X' + ENTER to exit.\n" +
@@ -136,29 +141,29 @@ public class RunMojoTest extends MojoTestBase {
 
             // Create mock.
 
-            expect(glassFishWebPluginRunner.call()).andAnswer(new IAnswer<Void>() {
+            when(glassFishWebPluginRunner.call()).thenAnswer(new Answer<Void>() {
                 @Override
-                public Void answer() throws Throwable {
+                public Void answer(InvocationOnMock invocation) throws Throwable {
                     System.out.println("Startup");
                     return null;
                 }
             });
-            expect(redeployHook.call()).andAnswer(new IAnswer<Void>() {
+            when(redeployHook.call()).thenAnswer(new Answer<Void>() {
                 @Override
-                public Void answer() throws Throwable {
+                public Void answer(InvocationOnMock invocation) throws Throwable {
                     System.out.println("Redeploy Failing");
                     throw new GlassFishException("Oops");
                 }
             });
-            expect(shutdownHook.call()).andAnswer(new IAnswer<Void>() {
-                @Override
-                public Void answer() throws Throwable {
-                    System.out.println("Shutdown");
-                    return null;
-                }
+            when(shutdownHook.call()).thenAnswer(new Answer<Void>()
+            {
+	            @Override
+	            public Void answer(InvocationOnMock invocation) throws Throwable
+	            {
+		            System.out.println("Shutdown");
+		            return null;
+	            }
             });
-
-            replay(glassFishWebPluginRunner, redeployHook, shutdownHook);
 
             // Create and test mojo.
 
@@ -180,9 +185,12 @@ public class RunMojoTest extends MojoTestBase {
 
             testedProcess.join();
 
-            verify(glassFishWebPluginRunner, redeployHook, shutdownHook);
+	        verify(glassFishWebPluginRunner, times(1)).call();
+	        verify(redeployHook, times(1)).call();
+	        verify(shutdownHook, times(1)).call();
             assertEquals(1, thrown.size());
-            assertTrue(thrown.get(0) instanceof MojoExecutionException);
+	        //noinspection ThrowableResultOfMethodCallIgnored
+	        assertTrue(thrown.get(0) instanceof MojoExecutionException);
             assertEquals("Startup\n" +
                     "Press ENTER to redeploy the artifact, or 'X' + ENTER to exit.\n" +
                     "Redeploy Failing\n" +
@@ -200,31 +208,30 @@ public class RunMojoTest extends MojoTestBase {
 
             // Redirect stdin & stdout
 
-            InputStream mockIn = createMock(InputStream.class);
-            expect(mockIn.read(anyObject(byte[].class), anyInt(), anyInt())).andThrow(new IOException("oops"));
-            replay(mockIn);
+            InputStream mockIn = mock(InputStream.class);
+            when(mockIn.read(any(byte[].class), anyInt(), anyInt())).thenThrow(new IOException("oops"));
             System.setIn(mockIn);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             System.setOut(new PrintStream(out));
 
             // Create mock.
 
-            expect(glassFishWebPluginRunner.call()).andAnswer(new IAnswer<Void>() {
+            when(glassFishWebPluginRunner.call()).thenAnswer(new Answer<Void>() {
                 @Override
-                public Void answer() throws Throwable {
+                public Void answer(InvocationOnMock invocation) throws Throwable {
                     System.out.println("Startup");
                     return null;
                 }
             });
-            expect(shutdownHook.call()).andAnswer(new IAnswer<Void>() {
-                @Override
-                public Void answer() throws Throwable {
-                    System.out.println("Shutdown");
-                    return null;
-                }
+            when(shutdownHook.call()).thenAnswer(new Answer<Void>()
+            {
+	            @Override
+	            public Void answer(InvocationOnMock invocation) throws Throwable
+	            {
+		            System.out.println("Shutdown");
+		            return null;
+	            }
             });
-
-            replay(glassFishWebPluginRunner, redeployHook, shutdownHook);
 
             // Create and test mojo.
 
@@ -246,8 +253,11 @@ public class RunMojoTest extends MojoTestBase {
 
             testedProcess.join();
 
-            verify(glassFishWebPluginRunner, redeployHook, shutdownHook);
+	        verify(glassFishWebPluginRunner, times(1)).call();
+	        verify(redeployHook, times(0)).call();
+	        verify(shutdownHook, times(1)).call();
             assertEquals(1, thrown.size());
+	        //noinspection ThrowableResultOfMethodCallIgnored
 	        assertTrue(thrown.get(0) instanceof MojoExecutionException);
             assertEquals("Startup\n" +
                     "Press ENTER to redeploy the artifact, or 'X' + ENTER to exit.\n" +

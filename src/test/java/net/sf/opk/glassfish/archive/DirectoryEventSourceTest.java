@@ -31,9 +31,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -256,17 +258,28 @@ public class DirectoryEventSourceTest extends FileBasedTestBase
 		pause();
 		assertFalse(watchThread.isAlive());
 
-        List<Map.Entry<? extends WatchEvent.Kind<?>, Path>> expected = new ArrayList<>();
-		expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, subDirectory));
-		expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_CREATE, childDir));
-		expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, childDir));
-        expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_CREATE, testFile));
-        expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, testFile));
-        expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_DELETE, testFile));
-        expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, childDir));
-        expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, subDirectory));
-        expected.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_DELETE, childDir));
-		assertEquals(expected, handledEvents);
+        List<Map.Entry<? extends WatchEvent.Kind<?>, Path>> expected1 = new ArrayList<>();
+		expected1.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, subDirectory));
+		expected1.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_CREATE, childDir));
+		expected1.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, childDir));
+        expected1.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_CREATE, testFile));
+        expected1.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, testFile));
+        expected1.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_DELETE, testFile));
+        expected1.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, childDir));
+        expected1.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, subDirectory));
+        expected1.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_DELETE, childDir));
+
+		List<Map.Entry<? extends WatchEvent.Kind<?>, Path>> expected2 = new ArrayList<>();
+		expected2.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_CREATE, childDir));
+		expected2.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, subDirectory));
+		expected2.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_CREATE, testFile));
+		expected2.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, childDir));
+		expected2.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, testFile));
+		expected2.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_DELETE, testFile));
+		expected2.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_MODIFY, childDir));
+		expected2.add(new AbstractMap.SimpleEntry<>(StandardWatchEventKinds.ENTRY_DELETE, childDir));
+
+		assertThat(handledEvents, anyOf(equalTo(expected1), equalTo(expected2)));
 	}
 
 
